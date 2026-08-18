@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PersonType {
+  PF
+  PJ
+}
+
+enum ProcessStatus {
+  ATIVO
+  CONCLUIDO
+  SUSPENSO
+}
+
+enum LegalArea {
+  CIVEL
+  CRIMINAL
+  TRABALHISTA
+  FAMILIA
+  TRIBUTARIO
+  CONSUMIDOR
+  OUTROS
+}
+
+enum EventType {
+  AUDIENCIA
+  PRAZO
+  REUNIAO
+}
+
+enum EventStatus {
+  PENDENTE
+  CONCLUIDO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  clients   Client[]
+  documents Document[]
+  events    Event[]
+
+  @@map("users")
+}
+
+model Client {
+  id         String     @id @default(cuid())
+  name       String
+  personType PersonType @map("person_type")
+  document   String
+  phone      String
+  whatsapp   String?
+  birthDate  DateTime?  @map("birth_date") @db.Date
+  notes      String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  processes Process[]
+  documents Document[]
+
+  @@unique([userId, document])
+  @@index([userId])
+  @@index([birthDate])
+  @@map("clients")
+}
+
+model Process {
+  id            String        @id @default(cuid())
+  processNumber String        @map("process_number")
+  court         String
+  area          LegalArea
+  status        ProcessStatus @default(ATIVO)
+  value         Float?
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  clientId String @map("client_id")
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  timeline  ProcessTimeline[]
+  documents Document[]
+  events    Event[]
+
+  @@unique([clientId, processNumber])
+  @@index([clientId])
+  @@index([status])
+  @@map("processes")
+}
+
+model ProcessTimeline {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  processId String  @map("process_id")
+  process   Process @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@index([processId])
+  @@index([date])
+  @@map("process_timeline")
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  fileName   String   @map("file_name")
+  fileUrl    String   @map("file_url") // Storage key (não é URL pública)
+  category   String?
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clientId String? @map("client_id")
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  processId String?  @map("process_id")
+  process   Process? @relation(fields: [processId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([processId])
+  @@map("documents")
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  eventDate   DateTime    @map("event_date")
+  type        EventType
+  status      EventStatus @default(PENDENTE)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  processId String?  @map("process_id")
+  process   Process? @relation(fields: [processId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([processId])
+  @@index([eventDate])
+  @@index([status])
+  @@map("events")
+}

@@ -1,0 +1,15 @@
+import { LoginForm } from "@/components/auth/login-form";
+
+interface LoginPageProps {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { callbackUrl } = await searchParams;
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
+      <LoginForm callbackUrl={callbackUrl ?? "/dashboard"} />
+    </div>
+  );
+}
