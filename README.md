@@ -32,7 +32,8 @@ cp .env.example .env
 # 3. Rodar migrações do banco
 npx prisma migrate dev
 
-# 4. (Opcional) Popular dados de exemplo
+# 4. (Opcional) Popular dados de exemplo (somente desenvolvimento)
+# Defina uma senha exclusiva, com pelo menos 12 caracteres, em SEED_DEMO_PASSWORD
 npm run db:seed
 
 # 5. Iniciar o servidor de desenvolvimento
@@ -62,7 +63,7 @@ Acesse [http://localhost:3000](http://localhost:3000).
 - **Login com e-mail e senha** — NextAuth.js v5 + Credentials provider
 - **Middleware** — Rotas protegidas; redirecionamento para `/login`
 - **Sessão JWT** — Nome do usuário na sidebar + botão Sair
-- **Usuário demo** — `advogado@crm.local` / `demo123` (após rodar o seed)
+- **Usuário demo** — criado somente em desenvolvimento; a senha é definida em `SEED_DEMO_PASSWORD` antes de rodar o seed
 - **Validação** — Tamanho e MIME type via Zod antes do upload
 
 ## Rotas
@@ -156,15 +157,15 @@ openssl rand -base64 32
 
 Na **Vercel**, configure `AUTH_SECRET` e `AUTH_URL` (ex: `https://seu-app.vercel.app`) em Environment Variables.
 
-### Atualizar senha do usuário demo
+### Criar usuário demo
 
-Se o banco já existia antes da Fase 4, rode o seed novamente para aplicar o hash bcrypt:
+O seed é bloqueado em produção e exige uma senha exclusiva de, no mínimo, 12 caracteres em `SEED_DEMO_PASSWORD`:
 
 ```bash
 npm run db:seed
 ```
 
-Login: **advogado@crm.local** / **demo123**
+O usuário criado é `advogado@crm.local`. A senha é a que foi definida em `SEED_DEMO_PASSWORD` e nunca é exibida pela aplicação.
 
 ## Scripts
 

@@ -8,6 +8,7 @@ import { buildStorageKey, getStorage } from "@/lib/storage";
 import {
   documentUploadSchema,
   sanitizeFileName,
+  validateFileContent,
   validateFileSize,
   validateFileType,
 } from "@/lib/validations/upload";
@@ -26,6 +27,23 @@ async function verifyProcessOwnership(processId: string, userId: string) {
       clientId: true,
     },
   });
+}
+
+function isStorageObjectNotFound(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const storageError = error as {
+    code?: string;
+    name?: string;
+    $metadata?: { httpStatusCode?: number };
+  };
+
+  return (
+    storageError.code === "ENOENT" ||
+    storageError.name === "NoSuchKey" ||
+    storageError.name === "NotFound" ||
+    storageError.$metadata?.httpStatusCode === 404
+  );
 }
 
 export async function uploadDocument(
@@ -68,19 +86,28 @@ export async function uploadDocument(
     };
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const contentValidation = validateFileContent(file.name, buffer);
+  if (!contentValidation.valid) {
+    return { success: false, message: contentValidation.message! };
+  }
+
   const safeFileName = sanitizeFileName(file.name);
   const storageKey = buildStorageKey(userId, processId, safeFileName);
-  const buffer = Buffer.from(await file.arrayBuffer());
+
+  let storage: ReturnType<typeof getStorage> | undefined;
+  let uploaded = false;
 
   try {
-    const storage = getStorage();
+    storage = getStorage();
 
     await storage.upload({
       key: storageKey,
       body: buffer,
-      contentType: file.type,
+      contentType: contentValidation.contentType!,
       contentLength: file.size,
     });
+    uploaded = true;
 
     await prisma.document.create({
       data: {
@@ -94,6 +121,15 @@ export async function uploadDocument(
     });
   } catch (error) {
     console.error("Erro no upload:", error);
+
+    if (uploaded && storage) {
+      try {
+        await storage.delete(storageKey);
+      } catch (cleanupError) {
+        console.error("Erro ao desfazer upload sem registro:", cleanupError);
+      }
+    }
+
     return {
       success: false,
       message: "Falha ao enviar o arquivo. Tente novamente.",
@@ -124,14 +160,61 @@ export async function deleteDocument(
     return { success: false, message: "Documento não encontrado." };
   }
 
+  let storage: ReturnType<typeof getStorage> | null = null;
+  let backup: Awaited<ReturnType<ReturnType<typeof getStorage>["readFile"]>> | null = null;
+
   try {
-    const storage = getStorage();
+    storage = getStorage();
+
+    try {
+      backup = await storage.readFile(document.fileUrl);
+    } catch (error) {
+      if (!isStorageObjectNotFound(error)) throw error;
+    }
+
     await storage.delete(document.fileUrl);
   } catch (error) {
     console.error("Erro ao remover arquivo do storage:", error);
+    return {
+      success: false,
+      message: "Não foi possível remover o arquivo. Tente novamente.",
+    };
   }
 
-  await prisma.document.delete({ where: { id: documentId } });
+  if (!storage) {
+    return { success: false, message: "Não foi possível remover o documento." };
+  }
+
+  try {
+    await prisma.document.delete({ where: { id: documentId } });
+  } catch (error) {
+    console.error("Erro ao remover registro do documento:", error);
+
+    const documentStillExists = await prisma.document
+      .findUnique({ where: { id: documentId }, select: { id: true } })
+      .catch((lookupError) => {
+        console.error("Erro ao verificar registro após falha na exclusão:", lookupError);
+        return null;
+      });
+
+    if (backup && documentStillExists) {
+      try {
+        await storage.upload({
+          key: document.fileUrl,
+          body: backup.buffer,
+          contentType: backup.contentType,
+          contentLength: backup.buffer.length,
+        });
+      } catch (restoreError) {
+        console.error("Erro ao restaurar arquivo após falha no banco:", restoreError);
+      }
+    }
+
+    return {
+      success: false,
+      message: "Não foi possível remover o documento. Tente novamente.",
+    };
+  }
 
   revalidatePath(`/processes/${processId}`);
 

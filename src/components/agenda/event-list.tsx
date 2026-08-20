@@ -1,7 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Calendar, CheckCircle2, Clock, Trash2 } from "lucide-react";
 import type { Client, Event, Process } from "@prisma/client";
 
@@ -16,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  EVENT_TIME_ZONE,
   EVENT_STATUS_LABELS,
   EVENT_TYPE_LABELS,
 } from "@/lib/validations/agenda";
@@ -34,6 +33,26 @@ const typeVariant: Record<Event["type"], "default" | "warning" | "secondary"> = 
   PRAZO: "warning",
   REUNIAO: "secondary",
 };
+
+const formatEventDay = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: EVENT_TIME_ZONE,
+  day: "2-digit",
+});
+
+const formatEventMonth = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: EVENT_TIME_ZONE,
+  month: "short",
+});
+
+const formatEventDateTime = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: EVENT_TIME_ZONE,
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
 
 export function EventList({ events }: EventListProps) {
   if (events.length === 0) {
@@ -91,10 +110,10 @@ function EventCard({ event }: { event: EventWithProcess }) {
           <div className="flex items-start gap-3">
             <div className="flex h-12 w-12 flex-col items-center justify-center rounded-lg bg-primary/10 text-primary">
               <span className="text-lg font-bold leading-none">
-                {format(event.eventDate, "dd")}
+                {formatEventDay.format(event.eventDate)}
               </span>
               <span className="text-[10px] uppercase">
-                {format(event.eventDate, "MMM", { locale: ptBR })}
+                {formatEventMonth.format(event.eventDate)}
               </span>
             </div>
             <div>
@@ -111,9 +130,7 @@ function EventCard({ event }: { event: EventWithProcess }) {
               </div>
               <CardDescription className="mt-1 flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
-                {format(event.eventDate, "EEEE, dd 'de' MMMM 'às' HH:mm", {
-                  locale: ptBR,
-                })}
+                {formatEventDateTime.format(event.eventDate)}
               </CardDescription>
               {event.process && (
                 <p className="mt-1 font-mono text-xs text-muted-foreground">

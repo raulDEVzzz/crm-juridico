@@ -4,7 +4,18 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash("demo123", 12);
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("O seed de demonstração não pode ser executado em produção.");
+  }
+
+  const demoPassword = process.env.SEED_DEMO_PASSWORD;
+  if (!demoPassword || demoPassword.length < 12) {
+    throw new Error(
+      "Defina SEED_DEMO_PASSWORD com ao menos 12 caracteres antes de executar o seed."
+    );
+  }
+
+  const passwordHash = await bcrypt.hash(demoPassword, 12);
 
   const user = await prisma.user.upsert({
     where: { email: "advogado@crm.local" },
@@ -152,7 +163,7 @@ async function main() {
   });
 
   console.log("Seed concluído com sucesso!");
-  console.log("Login: advogado@crm.local / demo123");
+  console.log("Usuário demo criado: advogado@crm.local");
 }
 
 main()

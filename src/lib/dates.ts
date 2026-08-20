@@ -12,8 +12,16 @@ export function parseDateUTC(value?: string | null): Date | null {
   const cleaned = value.trim();
   // Se contiver horário (ex: '2026-08-17T14:30'), extrai apenas a parte da data
   const datePart = cleaned.includes("T") ? cleaned.split("T")[0] : cleaned;
-  const date = new Date(`${datePart}T00:00:00.000Z`);
-  return Number.isNaN(date.getTime()) ? null : date;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return null;
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+    ? date
+    : null;
 }
 
 /**

@@ -12,6 +12,27 @@ export type LoginActionState = {
   errors?: Record<string, string[]>;
 };
 
+const DEFAULT_CALLBACK_URL = "/dashboard";
+
+function getSafeCallbackUrl(value: FormDataEntryValue | null): string {
+  if (typeof value !== "string") return DEFAULT_CALLBACK_URL;
+
+  const callbackUrl = value.trim();
+
+  // Aceita somente caminhos absolutos internos. Barras invertidas também são
+  // rejeitadas porque alguns navegadores as normalizam como barras normais.
+  if (
+    callbackUrl === "/" ||
+    !callbackUrl.startsWith("/") ||
+    callbackUrl.startsWith("//") ||
+    callbackUrl.includes("\\")
+  ) {
+    return DEFAULT_CALLBACK_URL;
+  }
+
+  return callbackUrl;
+}
+
 export async function loginAction(
   _prevState: LoginActionState,
   formData: FormData
@@ -29,10 +50,7 @@ export async function loginAction(
     };
   }
 
-  const rawCallbackUrl = formData.get("callbackUrl")?.toString();
-  // Se o callback for a raiz "/", redireciona para o "/dashboard"
-  const callbackUrl =
-    !rawCallbackUrl || rawCallbackUrl === "/" ? "/dashboard" : rawCallbackUrl;
+  const callbackUrl = getSafeCallbackUrl(formData.get("callbackUrl"));
 
   try {
     await signIn("credentials", {

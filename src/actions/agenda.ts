@@ -86,6 +86,15 @@ export async function createEvent(
     };
   }
 
+  const eventDate = parseEventDateTime(
+    parsed.data.eventDate,
+    parsed.data.eventTime
+  );
+
+  if (!eventDate) {
+    return { success: false, message: "Data ou horário inválido." };
+  }
+
   if (parsed.data.processId) {
     const process = await prisma.process.findFirst({
       where: {
@@ -104,7 +113,7 @@ export async function createEvent(
       userId,
       title: parsed.data.title,
       description: parsed.data.description || null,
-      eventDate: parseEventDateTime(parsed.data.eventDate, parsed.data.eventTime),
+      eventDate,
       type: parsed.data.type as EventType,
       status: parsed.data.status as EventStatus,
       processId: parsed.data.processId || null,

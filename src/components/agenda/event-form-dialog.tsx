@@ -101,10 +101,20 @@ export function EventFormDialog({
             <div className="space-y-2">
               <Label htmlFor="eventDate">Data *</Label>
               <Input id="eventDate" name="eventDate" type="date" required />
+              {state.errors?.eventDate && (
+                <p className="text-sm text-destructive">
+                  {state.errors.eventDate[0]}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="eventTime">Horário</Label>
               <Input id="eventTime" name="eventTime" type="time" defaultValue="09:00" />
+              {state.errors?.eventTime && (
+                <p className="text-sm text-destructive">
+                  {state.errors.eventTime[0]}
+                </p>
+              )}
             </div>
           </div>
 

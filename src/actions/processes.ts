@@ -7,6 +7,7 @@ import type { LegalArea, ProcessStatus } from "@prisma/client";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
+import { getStorage } from "@/lib/storage";
 import {
   processFormSchema,
   timelineFormSchema,
@@ -222,7 +223,22 @@ export async function deleteProcess(id: string): Promise<ActionState> {
     return { success: false, message: "Processo não encontrado." };
   }
 
-  await prisma.process.delete({ where: { id } });
+  const documents = await prisma.document.findMany({
+    where: { processId: id, userId },
+    select: { fileUrl: true },
+  });
+
+  try {
+    const storage = getStorage();
+    await Promise.all(documents.map((document) => storage.delete(document.fileUrl)));
+    await prisma.$transaction([
+      prisma.document.deleteMany({ where: { processId: id, userId } }),
+      prisma.process.delete({ where: { id } }),
+    ]);
+  } catch (error) {
+    console.error("Erro ao excluir processo e documentos:", error);
+    return { success: false, message: "Não foi possível excluir o processo." };
+  }
 
   revalidatePath("/processes");
   revalidatePath("/agenda");

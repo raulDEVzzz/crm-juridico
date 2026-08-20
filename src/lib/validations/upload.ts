@@ -68,6 +68,31 @@ export function validateFileType(
   return { valid: true };
 }
 
+/** Validates file signatures; MIME types sent by the browser are not trusted. */
+export function validateFileContent(
+  fileName: string,
+  buffer: Buffer
+): { valid: boolean; contentType?: AllowedMimeType; message?: string } {
+  const extension = getFileExtension(fileName);
+  const startsWith = (...bytes: number[]) =>
+    bytes.every((byte, index) => buffer[index] === byte);
+
+  const contentType =
+    extension === ".pdf" && buffer.subarray(0, 5).toString("ascii") === "%PDF-"
+      ? "application/pdf"
+      : (extension === ".jpg" || extension === ".jpeg") && startsWith(0xff, 0xd8, 0xff)
+        ? "image/jpeg"
+        : extension === ".png" && startsWith(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
+          ? "image/png"
+          : extension === ".docx" && startsWith(0x50, 0x4b, 0x03, 0x04)
+            ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            : undefined;
+
+  return contentType
+    ? { valid: true, contentType }
+    : { valid: false, message: "O conteúdo do arquivo não corresponde ao formato informado." };
+}
+
 export function validateFileSize(size: number): { valid: boolean; message?: string } {
   if (size > MAX_FILE_SIZE_BYTES) {
     return {

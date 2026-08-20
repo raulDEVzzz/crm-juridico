@@ -37,7 +37,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `inline; filename="${encodeURIComponent(document.fileName)}"`,
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(document.fileName)}"`,
         "Cache-Control": "private, no-cache, no-store, must-revalidate",
       },
     });

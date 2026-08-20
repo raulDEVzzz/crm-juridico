@@ -1,0 +1,4 @@
+-- Add the practice areas shown on the public site to the process form.
+ALTER TYPE "LegalArea" ADD VALUE IF NOT EXISTS 'IMOBILIARIO';
+ALTER TYPE "LegalArea" ADD VALUE IF NOT EXISTS 'MARITIMO_PORTUARIO_ADUANEIRO';
+ALTER TYPE "LegalArea" ADD VALUE IF NOT EXISTS 'EMPRESARIAL';

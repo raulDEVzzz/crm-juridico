@@ -7,6 +7,7 @@ import { PersonType } from "@prisma/client";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateUTC } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
+import { getStorage } from "@/lib/storage";
 import { clientFormSchema } from "@/lib/validations/client";
 import type { ActionState } from "@/types/actions";
 
@@ -156,7 +157,27 @@ export async function deleteClient(id: string): Promise<ActionState> {
     return { success: false, message: "Cliente não encontrado." };
   }
 
-  await prisma.client.delete({ where: { id } });
+  const documents = await prisma.document.findMany({
+    where: {
+      userId,
+      OR: [{ clientId: id }, { process: { clientId: id } }],
+    },
+    select: { fileUrl: true },
+  });
+
+  try {
+    const storage = getStorage();
+    await Promise.all(documents.map((document) => storage.delete(document.fileUrl)));
+    await prisma.$transaction([
+      prisma.document.deleteMany({
+        where: { userId, OR: [{ clientId: id }, { process: { clientId: id } }] },
+      }),
+      prisma.client.delete({ where: { id } }),
+    ]);
+  } catch (error) {
+    console.error("Erro ao excluir cliente e documentos:", error);
+    return { success: false, message: "Não foi possível excluir o cliente." };
+  }
 
   revalidatePath("/dashboard");
   revalidatePath("/clients");

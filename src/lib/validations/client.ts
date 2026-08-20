@@ -1,39 +1,116 @@
 import { z } from "zod";
+import { parseDateUTC } from "@/lib/dates";
 
 export const personTypeEnum = z.enum(["PF", "PJ"]);
 
-export const clientFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Nome deve ter pelo menos 2 caracteres")
-    .max(200, "Nome muito longo"),
-  personType: personTypeEnum,
-  document: z
-    .string()
-    .min(11, "Documento inválido")
-    .max(18, "Documento inválido")
-    .transform((val) => val.replace(/\D/g, "")),
-  phone: z
-    .string()
-    .min(10, "Telefone inválido")
-    .max(15, "Telefone inválido")
-    .transform((val) => val.replace(/\D/g, "")),
-  whatsapp: z
-    .string()
-    .max(15, "WhatsApp inválido")
-    .optional()
-    .transform((val) => (val ? val.replace(/\D/g, "") : undefined)),
-  birthDate: z
-    .string()
-    .optional()
-    .transform((val) => (val && val.length > 0 ? val : undefined)),
-  notes: z.string().max(2000, "Observações muito longas").optional(),
-});
+function normalizeDigits(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+function isValidBrazilianPhoneLength(value: string): boolean {
+  return value.length === 10 || value.length === 11;
+}
+
+export function isValidCpf(value: string): boolean {
+  const cpf = normalizeDigits(value);
+
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) {
+    return false;
+  }
+
+  const calculateCheckDigit = (digits: string, initialWeight: number) => {
+    const sum = digits.split("").reduce(
+      (total, digit, index) => total + Number(digit) * (initialWeight - index),
+      0
+    );
+    const remainder = (sum * 10) % 11;
+
+    return remainder === 10 ? 0 : remainder;
+  };
+
+  const firstDigit = calculateCheckDigit(cpf.slice(0, 9), 10);
+  const secondDigit = calculateCheckDigit(cpf.slice(0, 10), 11);
+
+  return firstDigit === Number(cpf[9]) && secondDigit === Number(cpf[10]);
+}
+
+export const clientFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "Nome deve ter pelo menos 2 caracteres")
+      .max(200, "Nome muito longo"),
+    personType: personTypeEnum,
+    document: z.string().transform(normalizeDigits),
+    phone: z.string().transform(normalizeDigits),
+    whatsapp: z
+      .string()
+      .optional()
+      .transform((value) =>
+        value === undefined || value.trim() === "" ? undefined : normalizeDigits(value)
+      ),
+    birthDate: z
+      .string()
+      .optional()
+      .transform((value) => (value && value.length > 0 ? value : undefined)),
+    notes: z.string().max(2000, "Observações muito longas").optional(),
+  })
+  .superRefine((data, context) => {
+    const requiredDocumentLength = data.personType === "PF" ? 11 : 14;
+    const documentLabel = data.personType === "PF" ? "CPF" : "CNPJ";
+
+    if (data.document.length !== requiredDocumentLength) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["document"],
+        message: `${documentLabel} deve ter ${requiredDocumentLength} dígitos.`,
+      });
+    }
+
+    if (
+      data.personType === "PF" &&
+      data.document.length === 11 &&
+      !isValidCpf(data.document)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["document"],
+        message: "CPF inválido.",
+      });
+    }
+
+    if (!isValidBrazilianPhoneLength(data.phone)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["phone"],
+        message: "Telefone deve ter 10 ou 11 dígitos.",
+      });
+    }
+
+    if (
+      data.whatsapp !== undefined &&
+      !isValidBrazilianPhoneLength(data.whatsapp)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["whatsapp"],
+        message: "WhatsApp deve ter 10 ou 11 dígitos.",
+      });
+    }
+
+    if (data.birthDate && !parseDateUTC(data.birthDate)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["birthDate"],
+        message: "Data de nascimento inválida.",
+      });
+    }
+  });
 
 export type ClientFormData = z.infer<typeof clientFormSchema>;
 
 export function formatDocument(document: string, personType: "PF" | "PJ"): string {
-  const digits = document.replace(/\D/g, "");
+  const digits = normalizeDigits(document);
 
   if (personType === "PF" && digits.length === 11) {
     return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
@@ -50,7 +127,7 @@ export function formatDocument(document: string, personType: "PF" | "PJ"): strin
 }
 
 export function formatPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
+  const digits = normalizeDigits(phone);
 
   if (digits.length === 11) {
     return digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");

@@ -10,6 +10,9 @@ export const legalAreaEnum = z.enum([
   "FAMILIA",
   "TRIBUTARIO",
   "CONSUMIDOR",
+  "IMOBILIARIO",
+  "MARITIMO_PORTUARIO_ADUANEIRO",
+  "EMPRESARIAL",
   "OUTROS",
 ]);
 
@@ -78,9 +81,12 @@ export const LEGAL_AREA_LABELS: Record<z.infer<typeof legalAreaEnum>, string> = 
   CIVEL: "Cível",
   CRIMINAL: "Criminal",
   TRABALHISTA: "Trabalhista",
-  FAMILIA: "Família",
+  FAMILIA: "Família e Sucessões",
   TRIBUTARIO: "Tributário",
   CONSUMIDOR: "Consumidor",
+  IMOBILIARIO: "Direito Imobiliário",
+  MARITIMO_PORTUARIO_ADUANEIRO: "Marítimo, Portuário e Aduaneiro",
+  EMPRESARIAL: "Direito Empresarial",
   OUTROS: "Outros",
 };
 

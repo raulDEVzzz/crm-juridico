@@ -89,11 +89,6 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Usuário demo:{" "}
-          <span className="font-mono">advogado@crm.local</span> /{" "}
-          <span className="font-mono">demo123</span>
-        </p>
       </CardContent>
     </Card>
   );

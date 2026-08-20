@@ -63,8 +63,10 @@ export class LocalStorageAdapter implements StorageAdapter {
     const filePath = this.resolvePath(key);
     try {
       await unlink(filePath);
-    } catch {
-      // Arquivo pode já ter sido removido
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        throw error;
+      }
     }
   }
 }
