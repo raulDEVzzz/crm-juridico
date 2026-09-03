@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FadeIn } from "@/components/ui/fade-in";
 import { MobileNav } from "@/components/ui/mobile-nav";
+import { EmailButton } from "@/components/ui/email-button";
 import {
   Anchor,
   ArrowUpRight,
@@ -110,7 +111,7 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 sm:px-8 lg:grid-cols-12 lg:gap-12">
             <FadeIn className="max-w-2xl lg:col-span-7">
               <p className="mb-4 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-300">
-                Advocacia Estratégica & Resolutiva
+                Assessoria Jurídica de Excelência
               </p>
               <h1 className="text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Segurança jurídica e firmeza na defesa dos seus interesses.
@@ -172,9 +173,9 @@ export default function LandingPage() {
                   </p>
                 </div>
                 <div className="text-center md:text-left md:px-6">
-                  <p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Estratégico</p>
+                  <p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Segurança</p>
                   <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
-                    Soluções Ágeis & Resolutivas
+                    Rigor Técnico & Processual
                   </p>
                 </div>
                 <div className="text-center md:text-left md:pl-6">
@@ -207,7 +208,7 @@ export default function LandingPage() {
               />
               <ValueCard
                 number="02"
-                title="Estratégia & Dados"
+                title="Planejamento & Viabilidade"
                 description="Avaliação criteriosa de viabilidade e custos antes de qualquer medida."
               />
               <ValueCard
@@ -255,7 +256,7 @@ export default function LandingPage() {
                 featured
                 icon={<Scale className="h-5 w-5 stroke-[1.8]" />}
                 title="Direito Cível"
-                description="Litígios patrimoniais, cobranças estratégicas, contratos e reparações por danos."
+                description="Litígios patrimoniais, recuperação de créditos, contratos civis e reparações por danos."
               />
               <PracticeCard
                 featured
@@ -289,7 +290,7 @@ export default function LandingPage() {
                 O escritório
               </p>
               <h2 className="mt-2 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Soluções construídas com estratégia, ética e visão resolutiva.
+                Soluções construídas com ética, técnica apurada e foco no resultado.
               </h2>
               <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-300">
                 Com estrutura moderna e atuação consultiva e contenciosa, unimos a precisão do Direito ao dinamismo digital, garantindo que cada cliente tenha uma defesa robusta e um plano de ação sob medida.
@@ -311,7 +312,7 @@ export default function LandingPage() {
                   Compromisso
                 </p>
                 <p className="mt-1.5 text-sm font-semibold leading-snug text-white">
-                  Advocacia estratégica, defesa combativa e foco na melhor solução para o cliente.
+                  Defesa combativa, transparência contínua e foco na melhor solução para o cliente.
                 </p>
               </div>
             </FadeIn>
@@ -335,7 +336,7 @@ export default function LandingPage() {
             <FadeIn delay={100} className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
               <FaqCard
                 question="Como funciona a primeira análise do caso?"
-                answer="Realizamos uma análise prévia e criteriosa dos fatos e documentos para avaliar a viabilidade jurídica, esclarecendo riscos, custos e as estratégias mais adequadas antes de qualquer contratação."
+                answer="Realizamos uma análise prévia e criteriosa dos fatos e documentos para avaliar a viabilidade jurídica, esclarecendo riscos, custos e os caminhos jurídicos mais adequados antes de qualquer contratação."
               />
               <FaqCard
                 question="O atendimento pode ser feito 100% online?"
@@ -378,13 +379,7 @@ export default function LandingPage() {
                     <MessageCircle className="h-4 w-4" />
                     Conversar pelo WhatsApp
                   </a>
-                  <a
-                    href="mailto:adverickdocarmo@gmail.com"
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-700 bg-slate-800/70 px-6 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
-                  >
-                    <Mail className="h-4 w-4" />
-                    Enviar e-mail
-                  </a>
+                  <EmailButton email="adverickdocarmo@gmail.com" />
                 </div>
 
                 <div className="mt-10 grid grid-cols-1 gap-4 border-t border-slate-800/80 pt-8 text-sm text-slate-300 sm:grid-cols-2">
@@ -397,13 +392,17 @@ export default function LandingPage() {
                     <Phone className="h-4 w-4 shrink-0 text-blue-400" />
                     (13) 99789-4415
                   </a>
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 shrink-0 text-blue-400" />
+                    <span className="text-xs sm:text-sm text-slate-300">adverickdocarmo@gmail.com</span>
+                  </div>
                   <div className="flex items-start gap-3">
                     <Clock className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
                     <span>Seg–Sex, das 09h às 18h</span>
                   </div>
-                  <div className="flex items-start gap-3 sm:col-span-2">
+                  <div className="flex items-start gap-3">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-                    <span>Sede em Praia Grande - SP | Atendimento presencial e online.</span>
+                    <span>Praia Grande - SP | Atendimento presencial e online</span>
                   </div>
                 </div>
 
