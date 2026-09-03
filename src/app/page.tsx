@@ -106,20 +106,20 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="border-b border-slate-800/80 bg-gradient-to-b from-[#070D1B] via-[#0B152B] to-[#070D1B] py-16 sm:py-24">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-2 lg:items-center">
-            <FadeIn className="max-w-2xl">
-              <p className="mb-5 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-300">
+        <section className="border-b border-slate-800/80 bg-gradient-to-b from-[#070D1B] via-[#0B152B] to-[#070D1B] py-10 sm:py-12 lg:py-16">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 sm:px-8 lg:grid-cols-12 lg:gap-12">
+            <FadeIn className="max-w-2xl lg:col-span-7">
+              <p className="mb-4 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-300">
                 Advocacia Estratégica & Resolutiva
               </p>
-              <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-5xl xl:text-6xl">
+              <h1 className="text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Segurança jurídica e firmeza na defesa dos seus interesses.
               </h1>
-              <p className="mt-7 text-lg font-normal leading-relaxed text-slate-300 sm:text-xl">
+              <p className="mt-5 text-base font-normal leading-relaxed text-slate-300 sm:text-lg">
                 Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.
               </p>
 
-              <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <a
                   href={whatsappUrl}
                   target="_blank"
@@ -138,7 +138,7 @@ export default function LandingPage() {
                 </Link>
               </div>
             </FadeIn>
-            <FadeIn delay={150} className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <FadeIn delay={150} className="relative mx-auto w-full max-w-sm sm:max-w-[400px] lg:col-span-5 lg:ml-auto">
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-900 shadow-2xl border border-slate-800/80">
                 <Image 
                   src="/erick-photo.jpg" 
@@ -147,7 +147,7 @@ export default function LandingPage() {
                   className="object-cover object-top" 
                   priority 
                   quality={95}
-                  sizes="(min-width: 1024px) 50vw, 100vw" 
+                  sizes="(min-width: 1024px) 40vw, 100vw" 
                 />
               </div>
             </FadeIn>
