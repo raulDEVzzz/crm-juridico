@@ -108,13 +108,13 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-2 lg:items-center">
             <FadeIn className="max-w-2xl">
               <p className="mb-5 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-300">
-                Mais de 300 clientes atendidos em todo o Brasil
+                Advocacia Estratégica & Resolutiva
               </p>
               <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-5xl xl:text-6xl">
                 Segurança jurídica e firmeza na defesa dos seus interesses.
               </h1>
               <p className="mt-7 text-lg font-normal leading-relaxed text-slate-300 sm:text-xl">
-                Atuação jurídica multidisciplinar e estratégica. Conduzimos cada caso com análise minuciosa de riscos, rigor técnico e foco resolutivo na proteção dos seus direitos e do seu patrimônio.
+                Atuação multidisciplinar orientada a resultados. Conduzimos cada demanda com análise criteriosa de cenários, previsibilidade de riscos e atendimento de excelência para pessoas e empresas.
               </p>
 
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -200,23 +200,23 @@ export default function LandingPage() {
             <FadeIn delay={100} className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               <ValueCard
                 number="01"
-                title="Atendimento Direto"
-                description="Seu caso conduzido diretamente pelo advogado responsável."
+                title="Comunicação Clara"
+                description="Linguagem sem juridiquês, transparência em cada fase e respostas ágeis."
               />
               <ValueCard
                 number="02"
-                title="Estratégia baseada em Dados"
-                description="Avaliação honesta de viabilidade e riscos antes de qualquer ação."
+                title="Estratégia & Dados"
+                description="Avaliação criteriosa de viabilidade e custos antes de qualquer medida."
               />
               <ValueCard
                 number="03"
                 title="Acompanhamento Ativo"
-                description="Prazos monitorados de perto e atualizações proativas ao cliente."
+                description="Prazos monitorados de perto e avisos proativos sobre movimentações."
               />
               <ValueCard
                 number="04"
                 title="Foco em Eficiência"
-                description="Prioridade na solução inteligente do conflito, seja amigável ou nos tribunais."
+                description="Prioridade na solução inteligente do conflito, na mesa de acordo ou nos tribunais."
               />
             </FadeIn>
           </div>
@@ -232,8 +232,7 @@ export default function LandingPage() {
                 Áreas de Atuação
               </h2>
               <p className="mt-3 text-base text-slate-400">
-                Atuação ampla e estratégica para prevenir riscos, proteger patrimônio e defender seus
-                interesses com solidez.
+                Soluções jurídicas com visão multidisciplinar para prevenir passivos, proteger seu patrimônio e garantir vitórias consistentes.
               </p>
             </FadeIn>
 
@@ -288,12 +287,10 @@ export default function LandingPage() {
                 O escritório
               </p>
               <h2 className="mt-2 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Rigor técnico, ética e compromisso real com o resultado.
+                Soluções construídas com estratégia, ética e visão resolutiva.
               </h2>
               <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-300">
-                Com sede em Praia Grande - SP e atendimento em todo o Brasil, atuamos
-                com a convicção de que o Direito deve ser acessível e altamente
-                resolutivo, oferecendo soluções customizadas para cada cliente.
+                Com estrutura moderna e atuação consultiva e contenciosa, unimos a precisão do Direito ao dinamismo digital, garantindo que cada cliente tenha uma defesa robusta e um plano de ação sob medida.
               </p>
             </FadeIn>
             <FadeIn delay={150} className="relative lg:col-span-6">
@@ -343,12 +340,12 @@ export default function LandingPage() {
                 answer="Sim. Por meio do processo judicial eletrônico e reuniões seguras por videoconferência e WhatsApp, atendemos com total validade jurídica e praticidade clientes de qualquer estado ou residentes no exterior."
               />
               <FaqCard
-                question="O escritório atende demandas fora do Estado de São Paulo?"
-                answer="Sim. Nossa atuação abrange processos e consultorias em todo o território nacional, atuando ativamente nas instâncias locais e perante os tribunais superiores."
+                question="Como são definidos os honorários e custos do serviço?"
+                answer="Trabalhamos com total clareza e previsibilidade. Cada proposta de honorários é personalizada conforme a complexidade e a modalidade da demanda, detalhada formalmente em contrato antes do início dos trabalhos."
               />
               <FaqCard
-                question="Como recebo atualizações do meu processo?"
-                answer="Priorizamos a transparência e a proatividade. Você terá contato direto com o advogado responsável e receberá atualizações periódicas e relatórios a cada andamento relevante."
+                question="Como acompanho o andamento do meu processo?"
+                answer="Priorizamos a comunicação ativa e contínua. Você recebe atualizações periódicas a cada movimentação relevante no tribunal e conta com canal direto para esclarecer dúvidas a qualquer momento."
               />
             </FadeIn>
           </div>
@@ -407,7 +404,7 @@ export default function LandingPage() {
                   </a>
                   <div className="flex items-start gap-3 sm:col-span-2">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-                    <span>Sede em Praia Grande - SP | Atendimento presencial e digital em todo o Brasil.</span>
+                    <span>Sede em Praia Grande - SP | Atendimento presencial e online.</span>
                   </div>
                   <div className="flex items-start gap-3 sm:col-span-2">
                     <Clock className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
