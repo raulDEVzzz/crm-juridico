@@ -1,6 +1,6 @@
-# CRM Jurídico
+# CRM Jurídico & Landing Page Institucional
 
-Sistema web de gestão para advogados — Fases 1 a 4.
+Plataforma completa para advocacia — Landing Page pública do Dr. Erick do Carmo e sistema web de gestão interna (CRM).
 
 ## Stack
 
@@ -44,40 +44,54 @@ Acesse [http://localhost:3000](http://localhost:3000).
 
 ## Funcionalidades
 
-### Fase 1
-- **CRUD de clientes** — Nome, CPF/CNPJ, telefone, WhatsApp, data de nascimento
-- **Dashboard de aniversariantes** — Hoje e próximos 7 dias
-- **Botão WhatsApp** — Link `wa.me` com mensagem de parabéns
+### Landing Page Institucional (Pública)
+- **Apresentação Profissional** — Hero section com chamada de autoridade e foto executiva
+- **Métricas de Destaque** — Faixa de autoridade (+300 clientes, atuação nacional, especializações)
+- **Áreas de Atuação** — Especialização em Direito Imobiliário, Marítimo, Portuário e Aduaneiro, Cível, etc.
+- **O Escritório** — Perfil institucional com fotos oficiais e credenciais
+- **FAQ (Perguntas Frequentes)** — Esclarecimentos sobre atendimento online e procedimentos
+- **Conversão Direta** — Botão flutuante do WhatsApp, links de e-mail e redes sociais
+- **Animações & UX** — Rolagem suave (`scroll-smooth`), revelação ao rolar (`FadeIn`) e micro-interações
 
-### Fase 2
-- **CRUD de processos** — Número CNJ, vara, área, status, valor
-- **Linha do tempo** — Andamentos cronológicos por processo
-- **Agenda** — Audiências, prazos e reuniões
+### Gestão de Clientes & Aniversariantes
+- **CRUD de clientes** — Nome, CPF/CNPJ (validação com dígito verificador), telefone, WhatsApp e data de nascimento
+- **Dashboard de aniversariantes** — Lista os aniversariantes dos próximos 7 dias
+- **Envio de Parabéns pelo WhatsApp** — Botão habilitado exclusivamente no dia exato do aniversário
 
-### Fase 3 — Upload de documentos
+### Gestão de Processos & Prazos
+- **CRUD de processos** — Número CNJ (busca exata ou formatada), vara, área jurídica, status e valor da causa
+- **Linha do tempo** — Histórico cronológico de andamentos por processo
+- **Agenda** — Audiências, prazos e reuniões com suporte ao fuso horário de Brasília (-03:00)
+
+### Upload & Gestão de Documentos
 - **Storage híbrido** — Filesystem local (dev) ou Cloudflare R2 (produção)
 - **Upload com drag & drop** — PDF, DOCX, JPG, PNG (máx. 10 MB)
 - **Download seguro** — Presigned URLs (R2) ou stream autenticado (local)
+- **Exclusão segura** — Fila assíncrona de limpeza de storage sem vazamento de memória
 
-### Fase 4 — Autenticação
-- **Login com e-mail e senha** — NextAuth.js v5 + Credentials provider
-- **Middleware** — Rotas protegidas; redirecionamento para `/login`
-- **Sessão JWT** — Nome do usuário na sidebar + botão Sair
-- **Usuário demo** — criado somente em desenvolvimento; a senha é definida em `SEED_DEMO_PASSWORD` antes de rodar o seed
-- **Validação** — Tamanho e MIME type via Zod antes do upload
+### Autenticação & Segurança
+- **Login com e-mail e senha** — NextAuth.js v5 + Credentials provider com proteção contra timing attack
+- **Middleware Edge-ready** — Rotas do CRM protegidas com redirecionamento para `/login`
+- **Cabeçalhos de Segurança** — HSTS, X-Frame-Options, CSP, COOP e MIME protection
+- **Prevenção de Open Redirect** — Validação estrita de parâmetros de retorno
 
 ## Rotas
 
-| Rota | Descrição |
-|------|-----------|
-| `/` | Dashboard de aniversariantes |
-| `/clients` | Gestão de clientes |
-| `/processes` | Listagem de processos com busca |
-| `/processes/[id]` | Detalhes com abas (Detalhes, Andamentos, Documentos) |
-| `/agenda` | Compromissos ordenados por data |
-| `/login` | Tela de autenticação |
-| `/api/auth/[...nextauth]` | Endpoints do NextAuth.js |
-| `/api/documents/[id]/download` | Download autenticado (redirect presigned ou stream) |
+| Rota | Acesso | Descrição |
+|------|--------|-----------|
+| `/` | Público | Landing Page institucional do Dr. Erick do Carmo |
+| `/login` | Público | Tela de autenticação do CRM |
+| `/dashboard` | Restrito | Painel do CRM (aniversariantes da semana e métricas) |
+| `/clients` | Restrito | Gestão de clientes (PF/PJ) com busca e validações |
+| `/clients/new` | Restrito | Cadastro de novo cliente |
+| `/clients/[id]/edit` | Restrito | Edição de dados do cliente |
+| `/processes` | Restrito | Listagem e busca de processos por número CNJ |
+| `/processes/new` | Restrito | Cadastro de processo e vinculação com cliente |
+| `/processes/[id]` | Restrito | Detalhes com abas (Detalhes, Andamentos, Documentos) |
+| `/processes/[id]/edit` | Restrito | Edição de processo |
+| `/agenda` | Restrito | Compromissos e prazos ordenados por data |
+| `/api/auth/[...nextauth]` | Sistema | Endpoints de autenticação do NextAuth.js |
+| `/api/documents/[id]/download` | Restrito | Download autenticado de documentos |
 
 ## Fase 3 — Configuração do Storage
 
