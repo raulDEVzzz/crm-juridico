@@ -114,7 +114,7 @@ export default function LandingPage() {
                 Segurança jurídica e firmeza na defesa dos seus interesses.
               </h1>
               <p className="mt-7 text-lg font-normal leading-relaxed text-slate-300 sm:text-xl">
-                Atuação multidisciplinar orientada a resultados. Conduzimos cada demanda com análise criteriosa de cenários, previsibilidade de riscos e atendimento de excelência para pessoas e empresas.
+                Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.
               </p>
 
               <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
