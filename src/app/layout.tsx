@@ -9,12 +9,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://crm-erick.vercel.app"),
   title: {
     default: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
     template: "%s | ERICK DO CARMO ADVOGADOS",
   },
   description:
-    "Advocacia multidisciplinar e assessoria jurídica estratégica em Direito Imobiliário, Trabalhista, Cível, Família e Empresas. Atendimento em todo o Brasil.",
+    "Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência. Atendimento em todo o Brasil.",
   icons: {
     icon: "/logo.jpg",
     apple: "/logo.jpg",
@@ -22,10 +23,26 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
     description:
-      "Segurança jurídica e firmeza na defesa dos seus interesses. Advocacia estratégica e assessoria jurídica em todo o Brasil.",
+      "Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.",
+    url: "https://crm-erick.vercel.app",
     siteName: "ERICK DO CARMO ADVOGADOS",
     locale: "pt_BR",
     type: "website",
+    images: [
+      {
+        url: "/erick-photo.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Dr. Erick do Carmo - ERICK DO CARMO ADVOGADOS",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
+    description:
+      "Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico e absoluta transparência.",
+    images: ["/erick-photo.jpg"],
   },
 };
 
