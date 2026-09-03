@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FadeIn } from "@/components/ui/fade-in";
+import { MobileNav } from "@/components/ui/mobile-nav";
 import {
   Anchor,
   ArrowUpRight,
@@ -59,7 +60,7 @@ export default function LandingPage() {
             </div>
             <div>
               <span className="block text-base font-semibold uppercase tracking-tight text-white">
-                Erick do Carmo Advogados
+                ERICK DO CARMO ADVOGADOS
               </span>
               <span className="block text-[11px] font-medium uppercase tracking-widest text-slate-400">
                 Assessoria Jurídica
@@ -87,18 +88,19 @@ export default function LandingPage() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-500 sm:inline-flex"
+              className="hidden items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-500 sm:inline-flex md:inline-flex"
             >
               <MessageCircle className="h-3.5 w-3.5" />
               Agendar Consulta
             </a>
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 rounded-md border border-slate-700/80 bg-slate-800/60 px-3 py-2 text-xs font-medium text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
+              className="hidden items-center gap-1.5 rounded-md border border-slate-700/80 bg-slate-800/60 px-3 py-2 text-xs font-medium text-slate-200 transition-colors hover:bg-slate-700 hover:text-white md:inline-flex"
             >
               <Lock className="h-3 w-3 text-slate-400" />
               Área Restrita
             </Link>
+            <MobileNav />
           </div>
         </div>
       </header>
@@ -387,13 +389,6 @@ export default function LandingPage() {
 
                 <div className="mt-10 grid grid-cols-1 gap-4 border-t border-slate-800/80 pt-8 text-sm text-slate-300 sm:grid-cols-2">
                   <a
-                    href="mailto:adverickdocarmo@gmail.com"
-                    className="flex items-center gap-3 transition-colors hover:text-white"
-                  >
-                    <Mail className="h-4 w-4 shrink-0 text-blue-400" />
-                    adverickdocarmo@gmail.com
-                  </a>
-                  <a
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -402,13 +397,13 @@ export default function LandingPage() {
                     <Phone className="h-4 w-4 shrink-0 text-blue-400" />
                     (13) 99789-4415
                   </a>
+                  <div className="flex items-start gap-3">
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
+                    <span>Seg–Sex, das 09h às 18h</span>
+                  </div>
                   <div className="flex items-start gap-3 sm:col-span-2">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
                     <span>Sede em Praia Grande - SP | Atendimento presencial e online.</span>
-                  </div>
-                  <div className="flex items-start gap-3 sm:col-span-2">
-                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-                    <span>Segunda a Sexta, das 09h às 18h | Atendimento presencial sob agendamento prévio.</span>
                   </div>
                 </div>
 
@@ -435,7 +430,7 @@ export default function LandingPage() {
       <footer className="bg-[#050811] py-12 text-xs text-slate-500 border-t border-slate-800/80">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 sm:px-8 md:flex-row md:items-center">
           <div>
-            <p className="text-sm font-semibold text-white">Erick do Carmo Advogados</p>
+            <p className="text-sm font-semibold text-white">ERICK DO CARMO ADVOGADOS</p>
             <p className="mt-0.5 text-slate-400">Assessoria Jurídica</p>
           </div>
 
