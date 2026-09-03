@@ -10,20 +10,20 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Dr. Erick do Carmo | Advocacia & Consultoria Jurídica",
-    template: "%s | Dr. Erick do Carmo Advogado",
+    default: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
+    template: "%s | ERICK DO CARMO ADVOGADOS",
   },
   description:
-    "Advocacia estratégica e consultoria jurídica especializada em Direito Imobiliário e Direito Marítimo, Portuário e Aduaneiro. Atendimento em todo o Brasil.",
+    "Advocacia multidisciplinar e assessoria jurídica estratégica em Direito Imobiliário, Trabalhista, Cível, Família e Empresas. Atendimento em todo o Brasil.",
   icons: {
     icon: "/logo.jpg",
     apple: "/logo.jpg",
   },
   openGraph: {
-    title: "Dr. Erick do Carmo | Advocacia & Consultoria Jurídica",
+    title: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
     description:
-      "Segurança jurídica e firmeza na defesa dos seus interesses. Especialista Pós-graduado em Direito Imobiliário e Direito Marítimo, Portuário e Aduaneiro.",
-    siteName: "Erick do Carmo Advogado",
+      "Segurança jurídica e firmeza na defesa dos seus interesses. Advocacia estratégica e assessoria jurídica em todo o Brasil.",
+    siteName: "ERICK DO CARMO ADVOGADOS",
     locale: "pt_BR",
     type: "website",
   },
