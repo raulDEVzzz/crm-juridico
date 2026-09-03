@@ -85,7 +85,7 @@ model Process {
   court         String
   area          LegalArea
   status        ProcessStatus @default(ATIVO)
-  value         Float?
+  value         Decimal?       @db.Decimal(14, 2)
   notes         String?
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
@@ -154,9 +154,33 @@ model Event {
   processId String?  @map("process_id")
   process   Process? @relation(fields: [processId], references: [id], onDelete: SetNull)
 
-  @@index([userId])
+  @@index([userId, eventDate])
   @@index([processId])
   @@index([eventDate])
   @@index([status])
   @@map("events")
+}
+
+model StorageDeletionJob {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  attempts    Int       @default(0)
+  lastError   String?   @map("last_error")
+  processedAt DateTime? @map("processed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([processedAt, createdAt])
+  @@map("storage_deletion_jobs")
+}
+
+model LoginAttempt {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  attempts      Int       @default(0)
+  windowStartedAt DateTime @map("window_started_at")
+  blockedUntil  DateTime? @map("blocked_until")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([blockedUntil])
+  @@map("login_attempts")
 }

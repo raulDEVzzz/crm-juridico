@@ -24,7 +24,7 @@ import {
   PROCESS_STATUS_LABELS,
 } from "@/lib/validations/process";
 
-type ProcessDetail = Process & {
+type ProcessDetail = Omit<Process, "value"> & { value: number | null;
   client: Client;
   timeline: ProcessTimeline[];
   documents: Document[];

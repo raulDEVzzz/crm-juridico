@@ -72,8 +72,11 @@ export const eventFormSchema = z.object({
     .refine(isValidCalendarDate, "Informe uma data válida no formato AAAA-MM-DD"),
   eventTime: z
     .string()
-    .regex(timePattern, "Informe um horário válido no formato HH:mm")
-    .optional(),
+    .optional()
+    .transform((val) => (val && val.trim() !== "" ? val.trim() : undefined))
+    .refine((val) => val === undefined || timePattern.test(val), {
+      message: "Informe um horário válido no formato HH:mm",
+    }),
   type: eventTypeEnum,
   status: eventStatusEnum.default("PENDENTE"),
   processId: z.string().optional(),

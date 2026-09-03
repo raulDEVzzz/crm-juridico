@@ -21,7 +21,7 @@ import {
   PROCESS_STATUS_LABELS,
 } from "@/lib/validations/process";
 
-type ProcessWithClient = Process & { client: Client };
+type ProcessWithClient = Omit<Process, "value"> & { value: number | null; client: Client };
 
 interface ProcessTableProps {
   processes: ProcessWithClient[];

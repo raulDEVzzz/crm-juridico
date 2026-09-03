@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildStorageKey, getStorage } from "@/lib/storage";
+import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import {
   documentUploadSchema,
   sanitizeFileName,
@@ -27,23 +28,6 @@ async function verifyProcessOwnership(processId: string, userId: string) {
       clientId: true,
     },
   });
-}
-
-function isStorageObjectNotFound(error: unknown): boolean {
-  if (!error || typeof error !== "object") return false;
-
-  const storageError = error as {
-    code?: string;
-    name?: string;
-    $metadata?: { httpStatusCode?: number };
-  };
-
-  return (
-    storageError.code === "ENOENT" ||
-    storageError.name === "NoSuchKey" ||
-    storageError.name === "NotFound" ||
-    storageError.$metadata?.httpStatusCode === 404
-  );
 }
 
 export async function uploadDocument(
@@ -126,7 +110,8 @@ export async function uploadDocument(
       try {
         await storage.delete(storageKey);
       } catch (cleanupError) {
-        console.error("Erro ao desfazer upload sem registro:", cleanupError);
+        console.error("Erro ao desfazer upload sem registro; enfileirando limpeza:", cleanupError);
+        await enqueueStorageDeletion([storageKey]).catch(() => undefined);
       }
     }
 
@@ -160,60 +145,24 @@ export async function deleteDocument(
     return { success: false, message: "Documento não encontrado." };
   }
 
-  let storage: ReturnType<typeof getStorage> | null = null;
-  let backup: Awaited<ReturnType<ReturnType<typeof getStorage>["readFile"]>> | null = null;
-
-  try {
-    storage = getStorage();
-
-    try {
-      backup = await storage.readFile(document.fileUrl);
-    } catch (error) {
-      if (!isStorageObjectNotFound(error)) throw error;
-    }
-
-    await storage.delete(document.fileUrl);
-  } catch (error) {
-    console.error("Erro ao remover arquivo do storage:", error);
-    return {
-      success: false,
-      message: "Não foi possível remover o arquivo. Tente novamente.",
-    };
-  }
-
-  if (!storage) {
-    return { success: false, message: "Não foi possível remover o documento." };
-  }
-
+  // 1. Remove primeiro do banco de dados para manter consistência
   try {
     await prisma.document.delete({ where: { id: documentId } });
   } catch (error) {
     console.error("Erro ao remover registro do documento:", error);
-
-    const documentStillExists = await prisma.document
-      .findUnique({ where: { id: documentId }, select: { id: true } })
-      .catch((lookupError) => {
-        console.error("Erro ao verificar registro após falha na exclusão:", lookupError);
-        return null;
-      });
-
-    if (backup && documentStillExists) {
-      try {
-        await storage.upload({
-          key: document.fileUrl,
-          body: backup.buffer,
-          contentType: backup.contentType,
-          contentLength: backup.buffer.length,
-        });
-      } catch (restoreError) {
-        console.error("Erro ao restaurar arquivo após falha no banco:", restoreError);
-      }
-    }
-
     return {
       success: false,
       message: "Não foi possível remover o documento. Tente novamente.",
     };
+  }
+
+  // 2. Remove do storage sem carregar buffer em memória
+  try {
+    const storage = getStorage();
+    await storage.delete(document.fileUrl);
+  } catch (error) {
+    console.error("Erro ao deletar arquivo do storage; enfileirando para retry:", error);
+    await enqueueStorageDeletion([document.fileUrl]).catch(() => undefined);
   }
 
   revalidatePath(`/processes/${processId}`);

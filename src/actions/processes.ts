@@ -2,13 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { LegalArea, ProcessStatus } from "@prisma/client";
+import { Prisma, type LegalArea, type ProcessStatus } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
-import { getStorage } from "@/lib/storage";
+import { serializeProcess } from "@/lib/serializers/process";
+import { drainStorageDeletionJobs, enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import {
+  formatCnj,
   processFormSchema,
   timelineFormSchema,
 } from "@/lib/validations/process";
@@ -20,7 +22,7 @@ export type { ActionState };
  * Verificação rápida de propriedade do processo pelo usuário logado (sem joins pesados).
  */
 async function verifyProcessOwner(processId: string, userId: string) {
-  return prisma.process.findFirst({
+  const process = await prisma.process.findFirst({
     where: {
       id: processId,
       client: { userId },
@@ -30,13 +32,14 @@ async function verifyProcessOwner(processId: string, userId: string) {
       clientId: true,
     },
   });
+  return process;
 }
 
 /**
  * Busca completa de processo com timeline e documentos associados.
  */
 async function getProcessWithDetails(processId: string, userId: string) {
-  return prisma.process.findFirst({
+  const process = await prisma.process.findFirst({
     where: {
       id: processId,
       client: { userId },
@@ -47,33 +50,46 @@ async function getProcessWithDetails(processId: string, userId: string) {
       documents: { orderBy: { uploadedAt: "desc" } },
     },
   });
+  return process ? serializeProcess(process) : null;
 }
 
 export async function getProcesses(search?: string) {
   const userId = await getCurrentUserId();
   const term = search?.trim();
 
-  return prisma.process.findMany({
+  let formattedSearchCnj: string | undefined;
+  if (term) {
+    const rawDigits = term.replace(/\D/g, "");
+    if (rawDigits.length > 0) {
+      formattedSearchCnj = formatCnj(rawDigits);
+    }
+  }
+
+  const processes = await prisma.process.findMany({
     where: {
       client: { userId },
       ...(term
         ? {
             OR: [
-              {
-                processNumber: {
-                  contains: term.replace(/\D/g, ""),
-                  mode: "insensitive",
-                },
-              },
+              ...(formattedSearchCnj
+                ? [
+                    {
+                      processNumber: {
+                        contains: formattedSearchCnj,
+                        mode: "insensitive" as const,
+                      },
+                    },
+                  ]
+                : []),
               {
                 processNumber: {
                   contains: term,
-                  mode: "insensitive",
+                  mode: "insensitive" as const,
                 },
               },
               {
                 client: {
-                  name: { contains: term, mode: "insensitive" },
+                  name: { contains: term, mode: "insensitive" as const },
                 },
               },
             ],
@@ -83,6 +99,7 @@ export async function getProcesses(search?: string) {
     include: { client: true },
     orderBy: { updatedAt: "desc" },
   });
+  return processes.map(serializeProcess);
 }
 
 export async function getProcessById(id: string) {
@@ -139,10 +156,20 @@ export async function createProcess(
       },
     });
     createdProcessId = process.id;
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        message: "Este número CNJ já está cadastrado para este cliente.",
+      };
+    }
+    console.error("Erro ao criar processo:", error);
     return {
       success: false,
-      message: "Não foi possível salvar. Verifique se o número CNJ já está cadastrado.",
+      message: "Ocorreu um erro ao salvar o processo. Tente novamente.",
     };
   }
 
@@ -203,10 +230,20 @@ export async function updateProcess(
         notes: parsed.data.notes || null,
       },
     });
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        message: "Este número CNJ já está cadastrado para este cliente.",
+      };
+    }
+    console.error("Erro ao atualizar processo:", error);
     return {
       success: false,
-      message: "Não foi possível atualizar. Verifique se o número CNJ já está cadastrado.",
+      message: "Ocorreu um erro ao atualizar o processo. Tente novamente.",
     };
   }
 
@@ -229,12 +266,12 @@ export async function deleteProcess(id: string): Promise<ActionState> {
   });
 
   try {
-    const storage = getStorage();
-    await Promise.all(documents.map((document) => storage.delete(document.fileUrl)));
     await prisma.$transaction([
       prisma.document.deleteMany({ where: { processId: id, userId } }),
       prisma.process.delete({ where: { id } }),
     ]);
+    await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
+    await drainStorageDeletionJobs();
   } catch (error) {
     console.error("Erro ao excluir processo e documentos:", error);
     return { success: false, message: "Não foi possível excluir o processo." };

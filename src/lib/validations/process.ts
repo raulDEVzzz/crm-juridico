@@ -59,8 +59,20 @@ export const processFormSchema = z.object({
     .optional()
     .transform((val) => {
       if (!val || val.trim() === "") return undefined;
-      const parsed = parseFloat(val.replace(",", "."));
-      return Number.isNaN(parsed) ? undefined : parsed;
+      
+      let cleaned = val.replace(/[R$\s]/gi, "");
+      
+      const lastCommaIndex = cleaned.lastIndexOf(",");
+      const lastDotIndex = cleaned.lastIndexOf(".");
+      
+      if (lastCommaIndex > lastDotIndex) {
+        cleaned = cleaned.replace(/\./g, "").replace(",", ".");
+      } else if (lastDotIndex > lastCommaIndex) {
+        cleaned = cleaned.replace(/,/g, "");
+      }
+      
+      const parsed = parseFloat(cleaned);
+      return Number.isNaN(parsed) || parsed < 0 ? undefined : parsed;
     }),
   notes: z.string().max(2000, "Observações muito longas").optional(),
 });

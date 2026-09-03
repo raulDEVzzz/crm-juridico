@@ -29,7 +29,7 @@ const initialState: ActionState = {
   message: "",
 };
 
-type ProcessOption = Process & { client: { name: string } };
+type ProcessOption = Omit<Process, "value"> & { value: number | null; client: { name: string } };
 
 interface EventFormDialogProps {
   processes: ProcessOption[];

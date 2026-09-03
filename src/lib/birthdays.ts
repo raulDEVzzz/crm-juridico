@@ -18,8 +18,11 @@ export interface BirthdayClient {
   isToday: boolean;
 }
 
-export function getBirthdayWindow(daysAhead = 7): { start: Date; end: Date } {
-  const today = startOfDay(new Date());
+export function getBirthdayWindow(
+  daysAhead = 7,
+  referenceDate = new Date()
+): { start: Date; end: Date } {
+  const today = startOfDay(referenceDate);
   const end = endOfDay(addDays(today, daysAhead));
 
   return { start: today, end };
@@ -52,8 +55,8 @@ export function filterUpcomingBirthdays<T extends { birthDate: Date | null }>(
   clients: T[],
   daysAhead = 7,
   referenceDate = new Date()
-): Array<T & { daysUntil: number; isToday: boolean }> {
-  const { start, end } = getBirthdayWindow(daysAhead);
+): Array<T & { birthDate: Date; daysUntil: number; isToday: boolean }> {
+  const { start, end } = getBirthdayWindow(daysAhead, referenceDate);
 
   return clients
     .filter((client): client is T & { birthDate: Date } => client.birthDate !== null)

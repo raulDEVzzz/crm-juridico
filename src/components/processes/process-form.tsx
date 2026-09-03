@@ -28,7 +28,7 @@ const initialState: ActionState = {
 
 interface ProcessFormProps {
   clients: Client[];
-  process?: Process & { client: Client };
+  process?: Omit<Process, "value"> & { value: number | null; client: Client };
   mode: "create" | "edit";
 }
 

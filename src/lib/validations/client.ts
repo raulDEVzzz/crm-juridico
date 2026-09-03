@@ -34,6 +34,31 @@ export function isValidCpf(value: string): boolean {
   return firstDigit === Number(cpf[9]) && secondDigit === Number(cpf[10]);
 }
 
+export function isValidCnpj(value: string): boolean {
+  const cnpj = normalizeDigits(value);
+
+  if (!/^\d{14}$/.test(cnpj) || /^(\d)\1{13}$/.test(cnpj)) {
+    return false;
+  }
+
+  const weightsFirst = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const weightsSecond = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+  const calcDigit = (sliceLength: number, weights: number[]) => {
+    const sum = cnpj
+      .slice(0, sliceLength)
+      .split("")
+      .reduce((acc, digit, idx) => acc + Number(digit) * weights[idx], 0);
+    const remainder = sum % 11;
+    return remainder < 2 ? 0 : 11 - remainder;
+  };
+
+  const firstDigit = calcDigit(12, weightsFirst);
+  const secondDigit = calcDigit(13, weightsSecond);
+
+  return firstDigit === Number(cnpj[12]) && secondDigit === Number(cnpj[13]);
+}
+
 export const clientFormSchema = z
   .object({
     name: z
@@ -79,6 +104,18 @@ export const clientFormSchema = z
       });
     }
 
+    if (
+      data.personType === "PJ" &&
+      data.document.length === 14 &&
+      !isValidCnpj(data.document)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["document"],
+        message: "CNPJ inválido.",
+      });
+    }
+
     if (!isValidBrazilianPhoneLength(data.phone)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -98,12 +135,21 @@ export const clientFormSchema = z
       });
     }
 
-    if (data.birthDate && !parseDateUTC(data.birthDate)) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["birthDate"],
-        message: "Data de nascimento inválida.",
-      });
+    if (data.birthDate) {
+      const parsedDate = parseDateUTC(data.birthDate);
+      if (!parsedDate) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["birthDate"],
+          message: "Data de nascimento inválida.",
+        });
+      } else if (parsedDate > new Date()) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["birthDate"],
+          message: "Data de nascimento não pode ser no futuro.",
+        });
+      }
     }
   });
 

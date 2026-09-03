@@ -6,6 +6,7 @@ import type { EventStatus, EventType } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { serializeProcess } from "@/lib/serializers/process";
 import {
   eventFormSchema,
   parseEventDateTime,
@@ -17,7 +18,7 @@ export type { ActionState };
 export async function getEvents() {
   const userId = await getCurrentUserId();
 
-  return prisma.event.findMany({
+  const events = await prisma.event.findMany({
     where: { userId },
     include: {
       process: {
@@ -26,13 +27,14 @@ export async function getEvents() {
     },
     orderBy: { eventDate: "asc" },
   });
+  return events.map((event) => ({ ...event, process: event.process ? serializeProcess(event.process) : null }));
 }
 
 export async function getUpcomingEvents() {
   const userId = await getCurrentUserId();
   const now = new Date();
 
-  return prisma.event.findMany({
+  const events = await prisma.event.findMany({
     where: {
       userId,
       eventDate: { gte: now },
@@ -45,12 +47,13 @@ export async function getUpcomingEvents() {
     },
     orderBy: { eventDate: "asc" },
   });
+  return events.map((event) => ({ ...event, process: event.process ? serializeProcess(event.process) : null }));
 }
 
 export async function getEventById(id: string) {
   const userId = await getCurrentUserId();
 
-  return prisma.event.findFirst({
+  const event = await prisma.event.findFirst({
     where: { id, userId },
     include: {
       process: {
@@ -58,6 +61,7 @@ export async function getEventById(id: string) {
       },
     },
   });
+  return event ? { ...event, process: event.process ? serializeProcess(event.process) : null } : null;
 }
 
 export async function createEvent(
@@ -123,9 +127,16 @@ export async function createEvent(
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
 
-  const returnTo = formData.get("returnTo")?.toString();
-  if (returnTo) {
-    redirect(returnTo);
+  const rawReturnTo = formData.get("returnTo")?.toString().trim();
+  const isSafeInternalUrl =
+    rawReturnTo &&
+    rawReturnTo.startsWith("/") &&
+    !rawReturnTo.startsWith("//") &&
+    !rawReturnTo.includes("\\") &&
+    !/[\x00-\x1F\x7F]/.test(rawReturnTo);
+
+  if (isSafeInternalUrl) {
+    redirect(rawReturnTo);
   }
 
   redirect("/agenda");

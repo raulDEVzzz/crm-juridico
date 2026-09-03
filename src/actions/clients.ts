@@ -2,12 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { PersonType } from "@prisma/client";
+import { PersonType, Prisma } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateUTC } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
-import { getStorage } from "@/lib/storage";
+import { drainStorageDeletionJobs, enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import { clientFormSchema } from "@/lib/validations/client";
 import type { ActionState } from "@/types/actions";
 
@@ -71,10 +71,20 @@ export async function createClient(
         userId,
       },
     });
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        message: "Já existe um cliente cadastrado com este CPF/CNPJ.",
+      };
+    }
+    console.error("Erro ao cadastrar cliente:", error);
     return {
       success: false,
-      message: "Não foi possível salvar. Verifique se o documento já está cadastrado.",
+      message: "Ocorreu um erro ao salvar o cliente. Tente novamente.",
     };
   }
 
@@ -133,10 +143,20 @@ export async function updateClient(
         notes: data.notes || null,
       },
     });
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        message: "Já existe um cliente cadastrado com este CPF/CNPJ.",
+      };
+    }
+    console.error("Erro ao atualizar cliente:", error);
     return {
       success: false,
-      message: "Não foi possível atualizar. Verifique se o documento já está cadastrado.",
+      message: "Ocorreu um erro ao atualizar o cliente. Tente novamente.",
     };
   }
 
@@ -166,14 +186,14 @@ export async function deleteClient(id: string): Promise<ActionState> {
   });
 
   try {
-    const storage = getStorage();
-    await Promise.all(documents.map((document) => storage.delete(document.fileUrl)));
     await prisma.$transaction([
       prisma.document.deleteMany({
         where: { userId, OR: [{ clientId: id }, { process: { clientId: id } }] },
       }),
       prisma.client.delete({ where: { id } }),
     ]);
+    await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
+    await drainStorageDeletionJobs();
   } catch (error) {
     console.error("Erro ao excluir cliente e documentos:", error);
     return { success: false, message: "Não foi possível excluir o cliente." };

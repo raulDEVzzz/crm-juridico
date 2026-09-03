@@ -26,11 +26,19 @@ export function parseDateUTC(value?: string | null): Date | null {
 
 /**
  * Converte uma string de data e hora (ex: 'YYYY-MM-DDTHH:mm' de <input type="datetime-local">
- * ou ISO string) para um objeto Date válido.
+ * ou ISO string) para um objeto Date válido com fuso de Brasília (America/Sao_Paulo / UTC-3).
  */
 export function parseDateTime(value?: string | null): Date | null {
   if (!value || typeof value !== "string" || value.trim() === "") return null;
   const cleaned = value.trim();
+
+  // Se for datetime-local sem fuso explícito (ex: '2026-08-27T14:30' ou '2026-08-27T14:30:00')
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(cleaned)) {
+    const withOffset = `${cleaned.slice(0, 16)}:00-03:00`;
+    const date = new Date(withOffset);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
   const date = new Date(cleaned);
   return Number.isNaN(date.getTime()) ? null : date;
 }
@@ -48,7 +56,7 @@ export function formatDateInput(date: Date | null | undefined): string {
 }
 
 /**
- * Formata um Date (armazenado em UTC meia-noite ou createdAt) para exibição
+ * Formata um Date (armazenado em UTC meia-noite) para exibição
  * no formato padrão brasileiro 'DD/MM/YYYY', sem sofrer conversão de fuso.
  */
 export function formatDateBR(date: Date | null | undefined): string {
@@ -57,6 +65,34 @@ export function formatDateBR(date: Date | null | undefined): string {
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const year = date.getUTCFullYear();
   return `${day}/${month}/${year}`;
+}
+
+/**
+ * Formata um timestamp completo (ex: createdAt, updatedAt) no fuso de Brasília.
+ */
+export function formatTimestampBR(date: Date | null | undefined): string {
+  if (!date) return "—";
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+/**
+ * Formata data e hora no padrão brasileiro (DD/MM/YYYY às HH:mm).
+ */
+export function formatDateTimeBR(date: Date | null | undefined): string {
+  if (!date) return "—";
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 /**

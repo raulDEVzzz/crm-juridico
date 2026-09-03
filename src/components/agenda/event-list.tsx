@@ -21,7 +21,7 @@ import {
 import { useTransition } from "react";
 
 type EventWithProcess = Event & {
-  process: (Process & { client: Client }) | null;
+  process: (Omit<Process, "value"> & { value: number | null; client: Client }) | null;
 };
 
 interface EventListProps {
