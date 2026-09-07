@@ -52,9 +52,9 @@ const socialLinks = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#070D1B] text-slate-100 selection:bg-blue-600 selection:text-white">
-      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-[#070D1B]/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-8">
+    <div className="min-h-screen bg-[#070D1B] text-slate-100 selection:bg-blue-600 selection:text-white overflow-x-hidden w-full max-w-[100vw]">
+      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-[#070D1B]/95 backdrop-blur-md w-full">
+        <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-8 w-full">
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0" aria-label="Erick do Carmo Advogados">
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-0.5 shadow-sm">
               <Image src="/logo.jpg" alt="Logo EC" width={40} height={40} className="object-cover" />
@@ -106,9 +106,9 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main>
-        <section className="border-b border-slate-800/80 bg-gradient-to-b from-[#070D1B] via-[#0B152B] to-[#070D1B] py-8 sm:py-12 lg:py-16">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-12 lg:gap-12">
+      <main className="w-full overflow-x-hidden">
+        <section className="border-b border-slate-800/80 bg-gradient-to-b from-[#070D1B] via-[#0B152B] to-[#070D1B] py-8 sm:py-12 lg:py-16 overflow-hidden w-full">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-12 lg:gap-12 w-full">
             <FadeIn className="max-w-2xl lg:col-span-7">
               <p className="mb-3 sm:mb-4 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-blue-300">
                 Assessoria Jurídica de Excelência
@@ -156,8 +156,8 @@ export default function LandingPage() {
         </section>
 
         {/* Faixa de Métricas de Autoridade */}
-        <section className="border-b border-slate-800/80 bg-[#050914] py-8 sm:py-10 text-white">
-          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <section className="border-b border-slate-800/80 bg-[#050914] py-8 sm:py-10 text-white overflow-hidden w-full">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8 w-full">
             <FadeIn direction="up">
               <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-4 md:divide-x md:divide-slate-800/80">
                 <div className="rounded-lg bg-[#091124]/40 p-3 sm:bg-transparent sm:p-0 text-center md:text-left md:pr-6">
@@ -189,18 +189,18 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="border-b border-slate-800/80 bg-[#091124] py-20">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <section className="border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 overflow-hidden w-full">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8 w-full">
             <FadeIn className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 Compromisso profissional
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Uma nova postura na prestação de serviços jurídicos.
               </h2>
             </FadeIn>
 
-            <FadeIn delay={100} className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <FadeIn delay={100} className="mt-8 sm:mt-12 grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
               <ValueCard
                 number="01"
                 title="Comunicação Clara"
@@ -225,8 +225,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="atuacao" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#070D1B] py-14 sm:py-20 lg:py-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <section id="atuacao" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#070D1B] py-14 sm:py-20 lg:py-24 overflow-hidden w-full">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8 w-full">
             <FadeIn className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 Prática jurídica
@@ -283,8 +283,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="escritorio" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 lg:py-24">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 sm:px-8 lg:grid-cols-12 lg:gap-12 lg:items-center">
+        <section id="escritorio" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 lg:py-24 overflow-hidden w-full">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 sm:px-8 lg:grid-cols-12 lg:gap-12 lg:items-center w-full">
             <FadeIn className="lg:col-span-6">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 O escritório
@@ -319,8 +319,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="faq" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#070D1B] py-14 sm:py-20 lg:py-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <section id="faq" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#070D1B] py-14 sm:py-20 lg:py-24 overflow-hidden w-full">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8 w-full">
             <FadeIn className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 Esclarecimentos
@@ -354,8 +354,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="contato" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 lg:py-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <section id="contato" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 lg:py-24 overflow-hidden w-full">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8 w-full">
             <FadeIn className="rounded-2xl border border-slate-700/80 bg-gradient-to-br from-[#0B152B] via-[#0E1B38] to-[#0A1328] p-5 sm:p-12 lg:p-16 shadow-2xl">
               <div className="max-w-3xl">
                 <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
@@ -426,7 +426,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="bg-[#050811] py-10 sm:py-12 text-xs text-slate-500 border-t border-slate-800/80">
+      <footer className="bg-[#050811] py-10 sm:py-12 text-xs text-slate-500 border-t border-slate-800/80 overflow-hidden w-full">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 sm:px-8 md:flex-row md:items-center">
           <div>
             <p className="text-sm font-semibold text-white">ERICK DO CARMO ADVOGADOS</p>

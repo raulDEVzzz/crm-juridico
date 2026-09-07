@@ -96,21 +96,25 @@ export function MobileNav() {
       </button>
 
       {/* Overlay escuro com z-index alto para cobrir todos os elementos flutuantes */}
-      {open && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm transition-opacity duration-300 md:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+          open
+            ? "opacity-100 pointer-events-auto visible"
+            : "opacity-0 pointer-events-none invisible"
+        }`}
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Drawer lateral com z-index [70] */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Menu de navegação"
-        className={`fixed right-0 top-0 z-[70] flex h-full w-[85vw] max-w-sm flex-col bg-[#070D1B] border-l border-slate-800/80 shadow-2xl transition-transform duration-300 ease-out md:hidden ${
-          open ? "translate-x-0" : "translate-x-full"
+        className={`fixed right-0 top-0 z-[70] flex h-full w-[85vw] max-w-sm flex-col bg-[#070D1B] border-l border-slate-800/80 shadow-2xl transition-all duration-300 ease-out md:hidden ${
+          open
+            ? "translate-x-0 opacity-100 pointer-events-auto visible"
+            : "translate-x-full opacity-0 pointer-events-none invisible"
         }`}
       >
         {/* Cabeçalho do drawer */}

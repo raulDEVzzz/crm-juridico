@@ -94,8 +94,8 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="pt-BR" className="scroll-smooth">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="pt-BR" className="scroll-smooth overflow-x-hidden">
+      <body className={`${inter.variable} font-sans antialiased overflow-x-hidden w-full max-w-[100vw]`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
