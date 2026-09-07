@@ -53,7 +53,7 @@ const socialLinks = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#070D1B] text-slate-100 selection:bg-blue-600 selection:text-white overflow-x-hidden w-full max-w-[100vw]">
-      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-[#070D1B]/95 backdrop-blur-md w-full">
+      <header className="sticky top-0 z-[101] border-b border-slate-800/80 bg-[#070D1B] w-full">
         <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-8 w-full">
           <Link href="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0" aria-label="Erick do Carmo Advogados">
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-0.5 shadow-sm">
