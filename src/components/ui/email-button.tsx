@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { Check, Copy, Mail, ExternalLink } from "lucide-react";
@@ -33,12 +33,12 @@ export function EmailButton({ email }: EmailButtonProps) {
   )}`;
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
       <button
         type="button"
         onClick={handleCopy}
         aria-label="Copiar endereço de e-mail"
-        className={`inline-flex items-center justify-center gap-2 rounded-md border px-5 py-3 text-sm font-medium transition-all duration-200 ${
+        className={`inline-flex items-center justify-center gap-2 rounded-md border px-5 py-3.5 sm:py-3 text-sm font-medium transition-all duration-200 w-full sm:w-auto ${
           copied
             ? "border-emerald-500/80 bg-emerald-950/60 text-emerald-300 shadow-sm"
             : "border-slate-700 bg-slate-800/70 text-slate-200 hover:border-slate-600 hover:bg-slate-700 hover:text-white"
@@ -61,7 +61,7 @@ export function EmailButton({ email }: EmailButtonProps) {
         href={gmailComposeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700/60 bg-slate-800/40 px-3.5 py-3 text-xs font-medium text-slate-400 transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-slate-200"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-700/60 bg-slate-800/40 px-3.5 py-2.5 sm:py-3 text-xs font-medium text-slate-400 transition-colors hover:border-slate-600 hover:bg-slate-800 hover:text-slate-200 w-full sm:w-auto"
         title="Abrir diretamente no Gmail Web"
       >
         <Mail className="h-3.5 w-3.5 text-blue-400" />

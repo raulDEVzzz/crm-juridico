@@ -53,17 +53,17 @@ const socialLinks = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#070D1B] text-slate-100 selection:bg-blue-600 selection:text-white">
-      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-[#070D1B]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-6 sm:px-8">
-          <Link href="/" className="flex items-center gap-3" aria-label="Erick do Carmo Advogados">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-white p-0.5 shadow-sm">
+      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-[#070D1B]/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-8">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 min-w-0" aria-label="Erick do Carmo Advogados">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-0.5 shadow-sm">
               <Image src="/logo.jpg" alt="Logo EC" width={40} height={40} className="object-cover" />
             </div>
-            <div>
-              <span className="block text-base font-semibold uppercase tracking-tight text-white">
+            <div className="min-w-0">
+              <span className="block text-xs sm:text-base font-semibold uppercase tracking-tight text-white leading-tight truncate sm:overflow-visible">
                 ERICK DO CARMO ADVOGADOS
               </span>
-              <span className="block text-[11px] font-medium uppercase tracking-widest text-slate-400">
+              <span className="block text-[9px] sm:text-[11px] font-medium uppercase tracking-widest text-slate-400">
                 Assessoria Jurídica
               </span>
             </div>
@@ -84,7 +84,7 @@ export default function LandingPage() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <a
               href={whatsappUrl}
               target="_blank"
@@ -107,20 +107,20 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="border-b border-slate-800/80 bg-gradient-to-b from-[#070D1B] via-[#0B152B] to-[#070D1B] py-10 sm:py-12 lg:py-16">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-6 sm:px-8 lg:grid-cols-12 lg:gap-12">
+        <section className="border-b border-slate-800/80 bg-gradient-to-b from-[#070D1B] via-[#0B152B] to-[#070D1B] py-8 sm:py-12 lg:py-16">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-4 sm:px-8 lg:grid-cols-12 lg:gap-12">
             <FadeIn className="max-w-2xl lg:col-span-7">
-              <p className="mb-4 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-blue-300">
+              <p className="mb-3 sm:mb-4 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-950/60 px-3 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-blue-300">
                 Assessoria Jurídica de Excelência
               </p>
-              <h1 className="text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl">
+              <h1 className="text-2xl font-semibold leading-[1.18] tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Segurança jurídica e firmeza na defesa dos seus interesses.
               </h1>
-              <p className="mt-5 text-base font-normal leading-relaxed text-slate-300 sm:text-lg">
+              <p className="mt-4 sm:mt-5 text-sm sm:text-base font-normal leading-relaxed text-slate-300 sm:text-lg">
                 Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.
               </p>
 
-              <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              <div className="mt-6 sm:mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <a
                   href={whatsappUrl}
                   target="_blank"
@@ -139,7 +139,7 @@ export default function LandingPage() {
                 </Link>
               </div>
             </FadeIn>
-            <FadeIn delay={150} className="relative mx-auto w-full max-w-sm sm:max-w-[400px] lg:col-span-5 lg:ml-auto">
+            <FadeIn delay={150} className="relative mx-auto w-full max-w-[320px] sm:max-w-[400px] lg:col-span-5 lg:ml-auto">
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-900 shadow-2xl border border-slate-800/80">
                 <Image 
                   src="/erick-photo.jpg" 
@@ -156,31 +156,31 @@ export default function LandingPage() {
         </section>
 
         {/* Faixa de Métricas de Autoridade */}
-        <section className="border-b border-slate-800/80 bg-[#050914] py-10 text-white">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <section className="border-b border-slate-800/80 bg-[#050914] py-8 sm:py-10 text-white">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <FadeIn direction="up">
-              <div className="grid grid-cols-2 gap-8 md:grid-cols-4 md:divide-x md:divide-slate-800/80">
-                <div className="text-center md:text-left md:pr-6">
-                  <p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">+300</p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
+              <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-4 md:divide-x md:divide-slate-800/80">
+                <div className="rounded-lg bg-[#091124]/40 p-3 sm:bg-transparent sm:p-0 text-center md:text-left md:pr-6">
+                  <p className="text-2xl font-bold tracking-tight text-white sm:text-4xl">+300</p>
+                  <p className="mt-1 text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-400">
                     Clientes Atendidos
                   </p>
                 </div>
-                <div className="text-center md:text-left md:px-6">
-                  <p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Nacional</p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
+                <div className="rounded-lg bg-[#091124]/40 p-3 sm:bg-transparent sm:p-0 text-center md:text-left md:px-6">
+                  <p className="text-2xl font-bold tracking-tight text-white sm:text-4xl">Nacional</p>
+                  <p className="mt-1 text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-400">
                     Atuação em Todo o Brasil
                   </p>
                 </div>
-                <div className="text-center md:text-left md:px-6">
-                  <p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">Segurança</p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
+                <div className="rounded-lg bg-[#091124]/40 p-3 sm:bg-transparent sm:p-0 text-center md:text-left md:px-6">
+                  <p className="text-2xl font-bold tracking-tight text-white sm:text-4xl">Segurança</p>
+                  <p className="mt-1 text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-400">
                     Rigor Técnico & Processual
                   </p>
                 </div>
-                <div className="text-center md:text-left md:pl-6">
-                  <p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">100%</p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-400">
+                <div className="rounded-lg bg-[#091124]/40 p-3 sm:bg-transparent sm:p-0 text-center md:text-left md:pl-6">
+                  <p className="text-2xl font-bold tracking-tight text-white sm:text-4xl">100%</p>
+                  <p className="mt-1 text-[11px] sm:text-xs font-medium uppercase tracking-wider text-slate-400">
                     Atendimento Personalizado
                   </p>
                 </div>
@@ -225,21 +225,21 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="atuacao" className="border-b border-slate-800/80 bg-[#070D1B] py-24">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <section id="atuacao" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#070D1B] py-14 sm:py-20 lg:py-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <FadeIn className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 Prática jurídica
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-4xl">
                 Áreas de Atuação
               </h2>
-              <p className="mt-3 text-base text-slate-400">
+              <p className="mt-3 text-sm sm:text-base text-slate-400">
                 Soluções jurídicas com visão multidisciplinar para prevenir passivos, proteger seu patrimônio e garantir vitórias consistentes.
               </p>
             </FadeIn>
 
-            <FadeIn delay={100} className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <FadeIn delay={100} className="mt-8 sm:mt-12 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
               <PracticeCard
                 featured
                 icon={<Landmark className="h-5 w-5 stroke-[1.8]" />}
@@ -283,21 +283,21 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="escritorio" className="border-b border-slate-800/80 bg-[#091124] py-24">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 sm:px-8 lg:grid-cols-12 lg:items-center">
+        <section id="escritorio" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 lg:py-24">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 sm:px-8 lg:grid-cols-12 lg:gap-12 lg:items-center">
             <FadeIn className="lg:col-span-6">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 O escritório
               </p>
-              <h2 className="mt-2 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-2 max-w-3xl text-2xl font-semibold tracking-tight text-white sm:text-4xl">
                 Soluções construídas com ética, técnica apurada e foco no resultado.
               </h2>
-              <p className="mt-6 max-w-3xl text-base leading-relaxed text-slate-300">
+              <p className="mt-4 sm:mt-6 max-w-3xl text-sm sm:text-base leading-relaxed text-slate-300">
                 Com estrutura moderna e atuação consultiva e contenciosa, unimos a precisão do Direito ao dinamismo digital, garantindo que cada cliente tenha uma defesa robusta e um plano de ação sob medida.
               </p>
             </FadeIn>
             <FadeIn delay={150} className="relative lg:col-span-6">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-slate-900 shadow-2xl border border-slate-800/80">
+              <div className="relative aspect-[4/5] w-full max-w-[340px] sm:max-w-none mx-auto overflow-hidden rounded-2xl bg-slate-900 shadow-2xl border border-slate-800/80">
                 <Image 
                   src="/erick-chair.jpg" 
                   alt="Dr. Erick do Carmo no escritório" 
@@ -307,11 +307,11 @@ export default function LandingPage() {
                   sizes="(min-width: 1024px) 50vw, 100vw"
                 />
               </div>
-              <div className="mt-4 sm:mt-0 sm:absolute sm:-bottom-6 sm:-left-6 max-w-xs rounded-xl border border-slate-700/80 bg-[#0B152B]/95 p-5 shadow-2xl backdrop-blur-md">
+              <div className="mt-4 sm:mt-0 sm:absolute sm:-bottom-6 sm:-left-6 w-full max-w-sm sm:max-w-xs mx-auto sm:mx-0 rounded-xl border border-slate-700/80 bg-[#0B152B]/95 p-4 sm:p-5 shadow-2xl backdrop-blur-md">
                 <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                   Compromisso
                 </p>
-                <p className="mt-1.5 text-sm font-semibold leading-snug text-white">
+                <p className="mt-1 text-xs sm:text-sm font-semibold leading-snug text-white">
                   Defesa combativa, transparência contínua e foco na melhor solução para o cliente.
                 </p>
               </div>
@@ -319,21 +319,21 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="faq" className="border-b border-slate-800/80 bg-[#070D1B] py-24">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
+        <section id="faq" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#070D1B] py-14 sm:py-20 lg:py-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
             <FadeIn className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                 Esclarecimentos
               </p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-4xl">
                 Perguntas Frequentes
               </h2>
-              <p className="mt-3 text-base text-slate-400">
+              <p className="mt-3 text-sm sm:text-base text-slate-400">
                 Tire suas principais dúvidas sobre o modelo de atuação e o início do atendimento.
               </p>
             </FadeIn>
 
-            <FadeIn delay={100} className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FadeIn delay={100} className="mt-8 sm:mt-12 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
               <FaqCard
                 question="Como funciona a primeira análise do caso?"
                 answer="Realizamos uma análise prévia e criteriosa dos fatos e documentos para avaliar a viabilidade jurídica, esclarecendo riscos, custos e os caminhos jurídicos mais adequados antes de qualquer contratação."
@@ -354,27 +354,27 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="contato" className="border-b border-slate-800/80 bg-[#091124] py-24">
-          <div className="mx-auto max-w-6xl px-6 sm:px-8">
-            <FadeIn className="rounded-2xl border border-slate-700/80 bg-gradient-to-br from-[#0B152B] via-[#0E1B38] to-[#0A1328] p-8 sm:p-12 lg:p-16 shadow-2xl">
+        <section id="contato" className="scroll-mt-16 sm:scroll-mt-20 border-b border-slate-800/80 bg-[#091124] py-14 sm:py-20 lg:py-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-8">
+            <FadeIn className="rounded-2xl border border-slate-700/80 bg-gradient-to-br from-[#0B152B] via-[#0E1B38] to-[#0A1328] p-5 sm:p-12 lg:p-16 shadow-2xl">
               <div className="max-w-3xl">
                 <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
                   Atendimento
                 </p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-4xl">
                   Vamos analisar o seu caso?
                 </h2>
-                <p className="mt-4 text-base leading-relaxed text-slate-300">
+                <p className="mt-3 sm:mt-4 text-sm sm:text-base leading-relaxed text-slate-300">
                   Conte com uma análise inicial atenta para entender o cenário, os
                   riscos e os caminhos jurídicos possíveis.
                 </p>
 
-                <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                <div className="mt-6 sm:mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                   <a
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-blue-950/50 transition-colors hover:bg-blue-500"
+                    className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-6 py-3.5 text-sm font-medium text-white shadow-lg shadow-blue-950/50 transition-colors hover:bg-blue-500"
                   >
                     <MessageCircle className="h-4 w-4" />
                     Conversar pelo WhatsApp
@@ -382,7 +382,7 @@ export default function LandingPage() {
                   <EmailButton email="adverickdocarmo@gmail.com" />
                 </div>
 
-                <div className="mt-10 grid grid-cols-1 gap-4 border-t border-slate-800/80 pt-8 text-sm text-slate-300 sm:grid-cols-2">
+                <div className="mt-8 sm:mt-10 grid grid-cols-1 gap-3.5 border-t border-slate-800/80 pt-6 sm:pt-8 text-sm text-slate-300 sm:grid-cols-2">
                   <a
                     href={whatsappUrl}
                     target="_blank"
@@ -406,14 +406,14 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="mt-8 flex flex-wrap gap-3">
+                <div className="mt-6 sm:mt-8 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
                   {socialLinks.map(({ label, href, icon: Icon }) => (
                     <a
                       key={label}
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md border border-slate-700/80 bg-slate-800/60 px-3 py-2 text-xs font-medium text-slate-300 transition-colors hover:border-slate-500 hover:text-white hover:bg-slate-800"
+                      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-700/80 bg-slate-800/60 px-3 py-2.5 text-xs font-medium text-slate-300 transition-colors hover:border-slate-500 hover:text-white hover:bg-slate-800"
                     >
                       <Icon className="h-4 w-4" />
                       {label}
@@ -426,8 +426,8 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="bg-[#050811] py-12 text-xs text-slate-500 border-t border-slate-800/80">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-6 sm:px-8 md:flex-row md:items-center">
+      <footer className="bg-[#050811] py-10 sm:py-12 text-xs text-slate-500 border-t border-slate-800/80">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 sm:px-8 md:flex-row md:items-center">
           <div>
             <p className="text-sm font-semibold text-white">ERICK DO CARMO ADVOGADOS</p>
             <p className="mt-0.5 text-slate-400">Assessoria Jurídica</p>
@@ -453,13 +453,13 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Botão Flutuante do WhatsApp */}
+      {/* Botão Flutuante do WhatsApp — z-40 para ficar abaixo do drawer mobile z-[70] */}
       <a
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Conversar pelo WhatsApp com Erick do Carmo Advogados"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-full bg-[#25D366] px-4 py-3 text-white shadow-xl transition-all duration-300 hover:scale-105 hover:bg-[#20bd5a] hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2"
+        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 flex h-12 w-12 sm:h-auto sm:w-auto items-center justify-center gap-2.5 rounded-full bg-[#25D366] p-3 sm:px-4 sm:py-3 text-white shadow-xl transition-all duration-300 hover:scale-105 hover:bg-[#20bd5a] hover:shadow-2xl focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2"
       >
         <MessageCircle className="h-5 w-5 fill-current" />
         <span className="hidden text-xs font-semibold sm:inline-block">
