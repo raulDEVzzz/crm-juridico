@@ -1,6 +1,16 @@
 # CRM Jurídico & Landing Page Institucional
 
+[![Deploy](https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel)](https://crm-erick.vercel.app)
+[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red)](#licença)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
 Plataforma completa para advocacia — Landing Page pública do Dr. Erick do Carmo e sistema web de gestão interna (CRM).
+
+> **⚠️ Aviso Legal** — Este repositório é público para fins de **portfólio e referência técnica**.
+> O código-fonte é protegido por direitos autorais. Consulte a [LICENSE](LICENSE) para detalhes.
 
 ## Stack
 
@@ -222,3 +232,17 @@ O usuário criado é `advogado`; o e-mail cadastrado é `advogado@crm.local`. A 
 | `npm run db:studio` | Abrir Prisma Studio |
 | `npm run db:seed` | Popular dados de exemplo (dev) |
 | `npm run db:create-admin` | Criar/atualizar usuário administrador |
+
+## Licença
+
+Copyright © 2026 **Raul Soares de Almeida**. Todos os direitos reservados.
+
+Este código-fonte é disponibilizado publicamente para fins de **portfólio e referência técnica**.
+O uso, cópia, modificação ou distribuição — total ou parcial — **não é permitido** sem autorização
+expressa por escrito do autor.
+
+Para licenciamento comercial, entre em contato: **raulalmeida2550@gmail.com**
+
+---
+
+Desenvolvido por [raulDEVzzz](https://github.com/raulDEVzzz)
