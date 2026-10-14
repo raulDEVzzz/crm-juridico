@@ -1,30 +1,48 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display, Cormorant_Garamond, Manrope } from "next/font/google";
 
 import "./globals.css";
+import { SITE_URL } from "@/lib/constants";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cormorant",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-manrope",
+});
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://crm-erick.vercel.app"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
+    default: "ERICK DO CARMO ADVOGADOS | Advocacia em Praia Grande e Litoral de SP",
     template: "%s | ERICK DO CARMO ADVOGADOS",
   },
   description:
-    "Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência. Atendimento em todo o Brasil.",
+    "Advocacia estratégica e assessoria jurídica integral com atendimento em todo o Brasil. Defesa dos seus direitos com excelência, rigor técnico e soluções sob medida para você e sua empresa.",
   icons: {
     icon: "/logo.jpg",
     apple: "/logo.jpg",
   },
   openGraph: {
-    title: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
+    title: "ERICK DO CARMO ADVOGADOS | Advocacia em Praia Grande e Litoral de SP",
     description:
-      "Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.",
-    url: "https://crm-erick.vercel.app",
+      "Advocacia estratégica e assessoria jurídica integral com atendimento em todo o Brasil. Defesa dos seus direitos com excelência, rigor técnico e soluções sob medida para você e sua empresa.",
+    url: SITE_URL,
     siteName: "ERICK DO CARMO ADVOGADOS",
     locale: "pt_BR",
     type: "website",
@@ -39,9 +57,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ERICK DO CARMO ADVOGADOS | Assessoria Jurídica",
+    title: "ERICK DO CARMO ADVOGADOS | Advocacia em Praia Grande e Litoral de SP",
     description:
-      "Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico e absoluta transparência.",
+      "Advocacia estratégica e assessoria jurídica integral com atendimento em todo o Brasil. Soluções sob medida para você e sua empresa.",
     images: ["/erick-photo.jpg"],
   },
 };
@@ -56,9 +74,10 @@ export default function RootLayout({
     "@type": "LegalService",
     name: "Erick do Carmo Advogados",
     alternateName: "ERICK DO CARMO ADVOGADOS",
+    identifier: "OAB/SP 465.833",
     description:
-      "Advocacia estratégica e assessoria jurídica multidisciplinar em Praia Grande - SP. Atendimento em todo o Brasil nas áreas de Direito Imobiliário, Trabalhista, Cível, Família e Sucessões, Empresarial e Marítimo.",
-    url: "https://crm-erick.vercel.app",
+      "Advocacia estratégica e assessoria jurídica integral com atendimento em todo o Brasil. Atuação com rigor técnico, ética e soluções personalizadas para pessoas físicas e empresas.",
+    url: SITE_URL,
     telephone: "+55-13-99789-4415",
     email: "adverickdocarmo@gmail.com",
     address: {
@@ -95,7 +114,7 @@ export default function RootLayout({
 
   return (
     <html lang="pt-BR" className="scroll-smooth overflow-x-hidden">
-      <body className={`${inter.variable} font-sans antialiased overflow-x-hidden w-full max-w-[100vw]`}>
+      <body className={`${inter.variable} ${playfair.variable} ${cormorant.variable} ${manrope.variable} font-sans antialiased overflow-x-hidden w-full max-w-[100vw]`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

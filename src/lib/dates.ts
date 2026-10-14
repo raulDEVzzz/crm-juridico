@@ -70,14 +70,16 @@ export function formatDateBR(date: Date | null | undefined): string {
 /**
  * Formata um timestamp completo (ex: createdAt, updatedAt) no fuso de Brasília.
  */
-export function formatTimestampBR(date: Date | null | undefined): string {
+export function formatTimestampBR(date: Date | string | null | undefined): string {
   if (!date) return "—";
+  const parsed = typeof date === "string" ? new Date(date) : date;
+  if (Number.isNaN(parsed.getTime())) return "—";
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: "America/Sao_Paulo",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(date);
+  }).format(parsed);
 }
 
 /**
@@ -114,4 +116,35 @@ export function toLocalEquivalent(utcDate: Date): Date {
     utcDate.getUTCMonth(),
     utcDate.getUTCDate()
   );
+}
+
+/**
+ * Retorna o ano, mês (0-indexed) e dia atuais no fuso horário de Brasília
+ * (America/Sao_Paulo), independentemente do relógio UTC do servidor.
+ *
+ * Use esta função sempre que precisar saber "hoje" para lógica de negócio
+ * brasileira (ex: verificar aniversariantes do dia), pois servidores em nuvem
+ * (Vercel, AWS Lambda) operam em UTC e `new Date()` sem ajuste de fuso
+ * causa bug entre 21h e 23h59 (horário de Brasília).
+ */
+const _brasiliaFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+});
+
+export function getBrasiliaDateParts(reference = new Date()): {
+  year: number;
+  month: number; // 0-indexed, igual a Date.getMonth()
+  day: number;
+} {
+  const parts = _brasiliaFormatter.formatToParts(reference);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value ?? "0");
+  return {
+    year: get("year"),
+    month: get("month") - 1, // Intl retorna 1-based, convertemos para 0-based
+    day: get("day"),
+  };
 }

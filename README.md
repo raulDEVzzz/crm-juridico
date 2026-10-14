@@ -70,7 +70,7 @@ Acesse [http://localhost:3000](http://localhost:3000).
 - **Exclusão segura** — Fila assíncrona de limpeza de storage sem vazamento de memória
 
 ### Autenticação & Segurança
-- **Login com e-mail e senha** — NextAuth.js v5 + Credentials provider com proteção contra timing attack
+- **Login com usuário e senha** — NextAuth.js v5 + Credentials provider com proteção contra timing attack
 - **Middleware Edge-ready** — Rotas do CRM protegidas com redirecionamento para `/login`
 - **Cabeçalhos de Segurança** — HSTS, X-Frame-Options, CSP, COOP e MIME protection
 - **Prevenção de Open Redirect** — Validação estrita de parâmetros de retorno
@@ -179,7 +179,7 @@ O seed é bloqueado em produção e exige uma senha exclusiva de, no mínimo, 12
 npm run db:seed
 ```
 
-O usuário criado é `advogado@crm.local`. A senha é a que foi definida em `SEED_DEMO_PASSWORD` e nunca é exibida pela aplicação.
+O usuário criado é `advogado`; o e-mail cadastrado é `advogado@crm.local`. A senha é a que foi definida em `SEED_DEMO_PASSWORD` e nunca é exibida pela aplicação.
 
 ## Scripts
 

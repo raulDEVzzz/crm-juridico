@@ -48,17 +48,17 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
           <input type="hidden" name="callbackUrl" value={callbackUrl} />
 
           <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
+            <Label htmlFor="username">Usuário</Label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="advogado@crm.local"
-              autoComplete="email"
+              id="username"
+              name="username"
+              type="text"
+              placeholder="erickdocarmo"
+              autoComplete="username"
               required
             />
-            {state.errors?.email && (
-              <p className="text-sm text-destructive">{state.errors.email[0]}</p>
+            {state.errors?.username && (
+              <p className="text-sm text-destructive">{state.errors.username[0]}</p>
             )}
           </div>
 

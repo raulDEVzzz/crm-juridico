@@ -84,7 +84,10 @@ export function validateFileContent(
         ? "image/jpeg"
         : extension === ".png" && startsWith(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
           ? "image/png"
-          : extension === ".docx" && startsWith(0x50, 0x4b, 0x03, 0x04)
+          : extension === ".docx" &&
+            startsWith(0x50, 0x4b, 0x03, 0x04) &&
+            buffer.includes("[Content_Types].xml") &&
+            buffer.includes("word/")
             ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             : undefined;
 

@@ -271,11 +271,13 @@ export async function deleteProcess(id: string): Promise<ActionState> {
       prisma.process.delete({ where: { id } }),
     ]);
     await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
-    await drainStorageDeletionJobs();
   } catch (error) {
-    console.error("Erro ao excluir processo e documentos:", error);
+    console.error("Erro ao excluir processo e documentos no banco:", error);
     return { success: false, message: "Não foi possível excluir o processo." };
   }
+
+  // Não bloqueia a resposta de sucesso
+  drainStorageDeletionJobs().catch(console.error);
 
   revalidatePath("/processes");
   revalidatePath("/agenda");
@@ -316,14 +318,19 @@ export async function createTimelineEntry(
     return { success: false, message: "Data inválida." };
   }
 
-  await prisma.processTimeline.create({
-    data: {
-      processId,
-      title: parsed.data.title,
-      description: parsed.data.description || null,
-      date,
-    },
-  });
+  try {
+    await prisma.processTimeline.create({
+      data: {
+        processId,
+        title: parsed.data.title,
+        description: parsed.data.description || null,
+        date,
+      },
+    });
+  } catch (error) {
+    console.error("Erro ao registrar andamento:", error);
+    return { success: false, message: "Erro ao registrar o andamento." };
+  }
 
   revalidatePath(`/processes/${processId}`);
 
@@ -350,7 +357,12 @@ export async function deleteTimelineEntry(
     return { success: false, message: "Andamento não encontrado." };
   }
 
-  await prisma.processTimeline.delete({ where: { id: timelineId } });
+  try {
+    await prisma.processTimeline.delete({ where: { id: timelineId } });
+  } catch (error) {
+    console.error("Erro ao remover andamento:", error);
+    return { success: false, message: "Erro ao remover o andamento." };
+  }
 
   revalidatePath(`/processes/${processId}`);
 

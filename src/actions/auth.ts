@@ -3,6 +3,8 @@
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
+import { headers } from "next/headers";
+
 import { signIn, signOut } from "@/auth";
 import { loginSchema } from "@/lib/validations/auth";
 
@@ -38,7 +40,7 @@ export async function loginAction(
   formData: FormData
 ): Promise<LoginActionState> {
   const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
+    username: formData.get("username"),
     password: formData.get("password"),
   });
 
@@ -51,11 +53,18 @@ export async function loginAction(
   }
 
   const callbackUrl = getSafeCallbackUrl(formData.get("callbackUrl"));
+  const headerList = await headers();
+  const clientIp =
+    headerList.get("cf-connecting-ip")?.trim() ||
+    headerList.get("x-real-ip")?.trim() ||
+    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "127.0.0.1";
 
   try {
     await signIn("credentials", {
-      email: parsed.data.email,
+      username: parsed.data.username,
       password: parsed.data.password,
+      clientIp,
       redirectTo: callbackUrl,
     });
   } catch (error) {
@@ -63,7 +72,7 @@ export async function loginAction(
       if (error.type === "CredentialsSignin") {
         return {
           success: false,
-          message: "E-mail ou senha inválidos.",
+          message: "Usuário ou senha inválidos.",
         };
       }
       return {

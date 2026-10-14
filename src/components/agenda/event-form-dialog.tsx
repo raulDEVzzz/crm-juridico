@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { Process } from "@prisma/client";
 
@@ -42,14 +41,23 @@ export function EventFormDialog({
   defaultProcessId,
   trigger,
 }: EventFormDialogProps) {
-  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   const [state, formAction, isPending] = useActionState(
     createEvent,
     initialState
   );
 
+  // Fecha o dialog automaticamente quando o compromisso é salvo com sucesso e reseta o formulário
+  useEffect(() => {
+    if (state.success) {
+      setOpen(false);
+      setFormKey((k) => k + 1);
+    }
+  }, [state.success]);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? <Button>Novo compromisso</Button>}
       </DialogTrigger>
@@ -60,7 +68,7 @@ export function EventFormDialog({
             Cadastre audiências, prazos ou reuniões na agenda.
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} className="space-y-4">
+        <form key={formKey} action={formAction} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Título *</Label>
             <Input
@@ -156,7 +164,7 @@ export function EventFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.refresh()}
+              onClick={() => setOpen(false)}
             >
               Cancelar
             </Button>

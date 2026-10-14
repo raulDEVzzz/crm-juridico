@@ -37,12 +37,9 @@ export function BirthdayCard({
 }: BirthdayCardProps) {
   const whatsappLink = buildBirthdayWhatsAppLink(name, phone, whatsapp);
 
-  // Verificação segura de timezone: compara dia/mês UTC do nascimento com dia/mês local atual
-  const now = new Date();
-  const isBirthdayToday =
-    isToday ||
-    (birthDate.getUTCDate() === now.getDate() &&
-      birthDate.getUTCMonth() === now.getMonth());
+  // `isToday` já é calculado com fuso de Brasília em birthdays.ts (getBrasiliaDateParts).
+  // Não é necessário refazer a comparação de data aqui.
+  const isBirthdayToday = isToday;
 
   return (
     <Card

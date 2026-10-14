@@ -4,10 +4,14 @@ import bcrypt from "bcryptjs";
 
 import { authConfig } from "@/auth.config";
 import { prisma } from "@/lib/prisma";
+import {
+  clearAttempts,
+  isKeyBlocked,
+  recordFailedAttempt,
+  ACCOUNT_MAX_ATTEMPTS,
+  IP_MAX_ATTEMPTS,
+} from "@/lib/rate-limit";
 import { loginSchema } from "@/lib/validations/auth";
-
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
@@ -15,8 +19,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        email: { label: "E-mail", type: "email" },
+        username: { label: "Usuário", type: "text" },
         password: { label: "Senha", type: "password" },
+        clientIp: { label: "Client IP", type: "text" },
       },
       async authorize(credentials) {
         const parsed = loginSchema.safeParse(credentials);
@@ -25,34 +30,49 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const email = parsed.data.email.toLowerCase();
-        const now = new Date();
-        const attempt = await prisma.loginAttempt.findUnique({ where: { email } });
-        if (attempt?.blockedUntil && attempt.blockedUntil > now) return null;
+        const username = parsed.data.username;
+        const rawIp =
+          typeof credentials?.clientIp === "string"
+            ? credentials.clientIp.trim()
+            : "";
+        const clientIp = rawIp.length > 0 ? rawIp : "unknown";
+
+        const userKey = `user:${username}`;
+        const ipKey = clientIp !== "unknown" ? `ip:${clientIp}` : null;
+
+        // 1. Verificação rápida atômica de bloqueio ativo antes de computar hash
+        const [isUserBlocked, isIpBlocked] = await Promise.all([
+          isKeyBlocked(userKey),
+          ipKey ? isKeyBlocked(ipKey) : Promise.resolve(false),
+        ]);
+
+        if (isUserBlocked || isIpBlocked) {
+          return null;
+        }
 
         const user = await prisma.user.findUnique({
-          where: { email },
+          where: { username },
         });
 
         // Hash fictício com custo 12 para garantir tempo de comparação constante
-        const DUMMY_HASH = "$2a$12$e8k5sR7y4fO6N5k9h7rQce2eHk8U1x4E9m0F6g7H8i9J0k1L2m3N4";
+        const DUMMY_HASH =
+          "$2a$12$e8k5sR7y4fO6N5k9h7rQce2eHk8U1x4E9m0F6g7H8i9J0k1L2m3N4";
         const isPasswordValid = await bcrypt.compare(
           parsed.data.password,
           user ? user.passwordHash : DUMMY_HASH
         );
 
         if (!user || !isPasswordValid) {
-          const resetWindow = !attempt || now.getTime() - attempt.windowStartedAt.getTime() > LOGIN_WINDOW_MS;
-          const attempts = resetWindow ? 1 : (attempt?.attempts ?? 0) + 1;
-          await prisma.loginAttempt.upsert({
-            where: { email },
-            create: { email, attempts, windowStartedAt: now, blockedUntil: attempts >= MAX_LOGIN_ATTEMPTS ? new Date(now.getTime() + LOGIN_WINDOW_MS) : null },
-            update: { attempts, windowStartedAt: resetWindow ? now : undefined, blockedUntil: attempts >= MAX_LOGIN_ATTEMPTS ? new Date(now.getTime() + LOGIN_WINDOW_MS) : null },
-          });
+          // Incrementa atômica e simultaneamente contadores de conta e de IP
+          await Promise.all([
+            recordFailedAttempt(userKey, ACCOUNT_MAX_ATTEMPTS),
+            ipKey ? recordFailedAttempt(ipKey, IP_MAX_ATTEMPTS) : Promise.resolve(),
+          ]);
           return null;
         }
 
-        await prisma.loginAttempt.delete({ where: { email } }).catch(() => undefined);
+        // 2. Limpa o contador de tentativas da conta em caso de sucesso
+        await clearAttempts(userKey);
 
         return {
           id: user.id,

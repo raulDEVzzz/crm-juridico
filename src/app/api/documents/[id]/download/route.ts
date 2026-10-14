@@ -27,7 +27,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const storage = getStorage();
 
     if (storage.driver === "s3") {
-      const signedUrl = await storage.getSignedUrl(document.fileUrl);
+      const signedUrl = await storage.getSignedUrl(document.fileUrl, 900, document.fileName);
       return NextResponse.redirect(signedUrl);
     }
 
@@ -42,6 +42,9 @@ export async function GET(_request: Request, { params }: RouteParams) {
       },
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'Não autenticado') {
+      return NextResponse.json({ error: 'Não autenticado.' }, { status: 401 });
+    }
     console.error("Erro no download:", error);
     return NextResponse.json(
       { error: "Erro ao baixar o documento." },

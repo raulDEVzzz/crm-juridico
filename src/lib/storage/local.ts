@@ -33,7 +33,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     return { key: params.key };
   }
 
-  async getSignedUrl(key: string): Promise<string> {
+  async getSignedUrl(key: string, expiresInSeconds?: number, _originalName?: string): Promise<string> {
     // Em ambiente local, o download é feito via Route Handler autenticado.
     // Retornamos a key para o handler resolver o stream diretamente.
     return key;

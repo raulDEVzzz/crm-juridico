@@ -60,11 +60,22 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        gold: {
+          DEFAULT: "#DFB76C",
+          soft: "rgba(223, 183, 108, 0.12)",
+          hover: "#F0CD89",
+        },
+        ink: "#070A12",
+        surface: "#0F1626",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ["var(--font-manrope)", "var(--font-inter)", "sans-serif"],
+        serif: ["var(--font-cormorant)", "var(--font-playfair)", "serif"],
       },
     },
   },

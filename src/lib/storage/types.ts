@@ -12,7 +12,7 @@ export interface UploadResult {
 export interface StorageAdapter {
   readonly driver: "local" | "s3";
   upload(params: UploadParams): Promise<UploadResult>;
-  getSignedUrl(key: string, expiresInSeconds?: number): Promise<string>;
+  getSignedUrl(key: string, expiresInSeconds?: number, originalName?: string): Promise<string>;
   readFile(key: string): Promise<{ buffer: Buffer; contentType: string }>;
   delete(key: string): Promise<void>;
 }

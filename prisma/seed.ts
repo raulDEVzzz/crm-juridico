@@ -19,10 +19,11 @@ async function main() {
 
   const user = await prisma.user.upsert({
     where: { email: "advogado@crm.local" },
-    update: { passwordHash },
+    update: { passwordHash, username: "advogado" },
     create: {
       id: "demo-user-id",
       name: "Advogado Demo",
+      username: "advogado",
       email: "advogado@crm.local",
       passwordHash,
     },
@@ -163,7 +164,7 @@ async function main() {
   });
 
   console.log("Seed concluído com sucesso!");
-  console.log("Usuário demo criado: advogado@crm.local");
+  console.log("Usuário demo pronto para login: advogado (e-mail cadastrado: advogado@crm.local)");
 }
 
 main()

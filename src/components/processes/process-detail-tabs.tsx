@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatTimestampBR } from "@/lib/dates";
 import {
   LEGAL_AREA_LABELS,
   PROCESS_STATUS_LABELS,
@@ -133,11 +134,11 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
               />
               <DetailItem
                 label="Cadastrado em"
-                value={process.createdAt.toLocaleDateString("pt-BR")}
+                value={formatTimestampBR(process.createdAt)}
               />
               <DetailItem
                 label="Atualizado em"
-                value={process.updatedAt.toLocaleDateString("pt-BR")}
+                value={formatTimestampBR(process.updatedAt)}
               />
               {process.notes && (
                 <div className="sm:col-span-2">

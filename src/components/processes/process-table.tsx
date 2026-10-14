@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { formatTimestampBR } from "@/lib/dates";
 import {
   LEGAL_AREA_LABELS,
   PROCESS_STATUS_LABELS,
@@ -156,13 +157,13 @@ export function ProcessTable({ processes }: ProcessTableProps) {
                 <div>
                   <p className="text-muted-foreground">Atualizado em</p>
                   <p className="font-medium">
-                    {process.updatedAt.toLocaleDateString("pt-BR")}
+                    {formatTimestampBR(process.updatedAt)}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Cadastrado em</p>
                   <p className="font-medium">
-                    {process.createdAt.toLocaleDateString("pt-BR")}
+                    {formatTimestampBR(process.createdAt)}
                   </p>
                 </div>
               </CardContent>

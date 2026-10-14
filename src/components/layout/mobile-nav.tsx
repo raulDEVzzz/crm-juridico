@@ -1,44 +1,18 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Calendar,
-  Gavel,
-  LayoutDashboard,
   Menu,
   Scale,
-  Users,
   X,
 } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
+import { navItems } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Clientes",
-    href: "/clients",
-    icon: Users,
-  },
-  {
-    title: "Processos",
-    href: "/processes",
-    icon: Gavel,
-  },
-  {
-    title: "Agenda",
-    href: "/agenda",
-    icon: Calendar,
-  },
-];
 
 interface MobileNavProps {
   userName: string;

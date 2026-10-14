@@ -57,11 +57,13 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async getSignedUrl(
     key: string,
-    expiresInSeconds?: number
+    expiresInSeconds?: number,
+    originalName?: string
   ): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: key,
+      ...(originalName ? { ResponseContentDisposition: `attachment; filename="${encodeURIComponent(originalName)}"` } : {})
     });
 
     return getSignedUrl(this.client, command, {

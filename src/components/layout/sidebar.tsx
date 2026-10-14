@@ -2,39 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Calendar,
-  Gavel,
-  LayoutDashboard,
-  Scale,
-  Users,
-} from "lucide-react";
+import { Scale } from "lucide-react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { navItems } from "@/lib/nav-items";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Clientes",
-    href: "/clients",
-    icon: Users,
-  },
-  {
-    title: "Processos",
-    href: "/processes",
-    icon: Gavel,
-  },
-  {
-    title: "Agenda",
-    href: "/agenda",
-    icon: Calendar,
-  },
-];
 
 interface SidebarProps {
   userName: string;

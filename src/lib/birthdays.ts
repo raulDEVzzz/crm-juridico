@@ -6,7 +6,7 @@ import {
   startOfDay,
 } from "date-fns";
 
-import { formatDateShortBR, toLocalEquivalent } from "@/lib/dates";
+import { formatDateShortBR, getBrasiliaDateParts, toLocalEquivalent } from "@/lib/dates";
 
 export interface BirthdayClient {
   id: string;
@@ -18,29 +18,37 @@ export interface BirthdayClient {
   isToday: boolean;
 }
 
+/**
+ * Retorna a janela de tempo (start/end) para buscar aniversariantes.
+ * Usa o "hoje" de Brasília para garantir que o servidor em UTC não
+ * desvie a janela nas últimas 3h do dia.
+ */
 export function getBirthdayWindow(
   daysAhead = 7,
   referenceDate = new Date()
 ): { start: Date; end: Date } {
-  const today = startOfDay(referenceDate);
+  const { year, month, day } = getBrasiliaDateParts(referenceDate);
+  // Cria a referência em hora local (onde date-fns opera corretamente)
+  const today = startOfDay(new Date(year, month, day));
   const end = endOfDay(addDays(today, daysAhead));
-
   return { start: today, end };
 }
 
+/**
+ * Calcula quantos dias faltam para o próximo aniversário do cliente.
+ * O "hoje" é determinado pelo fuso de Brasília, não pelo UTC do servidor.
+ */
 export function calculateDaysUntilBirthday(birthDate: Date, referenceDate = new Date()): number {
-  const today = startOfDay(referenceDate);
-  const currentYear = today.getFullYear();
+  const { year, month, day } = getBrasiliaDateParts(referenceDate);
+  const today = startOfDay(new Date(year, month, day));
 
   // Normaliza o birthDate UTC para hora local antes de usar date-fns
   const localBirthDate = toLocalEquivalent(birthDate);
 
-  let nextBirthday = startOfDay(
-    setYear(localBirthDate, currentYear)
-  );
+  let nextBirthday = startOfDay(setYear(localBirthDate, year));
 
   if (nextBirthday < today) {
-    nextBirthday = startOfDay(setYear(localBirthDate, currentYear + 1));
+    nextBirthday = startOfDay(setYear(localBirthDate, year + 1));
   }
 
   const diffMs = nextBirthday.getTime() - today.getTime();
@@ -57,25 +65,24 @@ export function filterUpcomingBirthdays<T extends { birthDate: Date | null }>(
   referenceDate = new Date()
 ): Array<T & { birthDate: Date; daysUntil: number; isToday: boolean }> {
   const { start, end } = getBirthdayWindow(daysAhead, referenceDate);
+  const { year, month, day } = getBrasiliaDateParts(referenceDate);
+  const todayLocal = startOfDay(new Date(year, month, day));
 
   return clients
     .filter((client): client is T & { birthDate: Date } => client.birthDate !== null)
     .map((client) => {
       const daysUntil = calculateDaysUntilBirthday(client.birthDate, referenceDate);
       const isToday = daysUntil === 0;
-
       return { ...client, daysUntil, isToday };
     })
     .filter((client) => {
       if (client.isToday) return true;
 
-      const currentYear = referenceDate.getFullYear();
-      // Normaliza o birthDate UTC para hora local antes de comparar
       const localBirthDate = toLocalEquivalent(client.birthDate);
-      let nextBirthday = setYear(localBirthDate, currentYear);
+      let nextBirthday = setYear(localBirthDate, year);
 
-      if (nextBirthday < startOfDay(referenceDate)) {
-        nextBirthday = setYear(localBirthDate, currentYear + 1);
+      if (nextBirthday < todayLocal) {
+        nextBirthday = setYear(localBirthDate, year + 1);
       }
 
       return isWithinInterval(nextBirthday, { start, end });

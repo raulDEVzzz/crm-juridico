@@ -36,7 +36,25 @@ export function formatCnj(value: string): string {
 }
 
 export function isValidCnj(value: string): boolean {
-  return CNJ_REGEX.test(formatCnj(value));
+  const formatted = formatCnj(value);
+  if (!CNJ_REGEX.test(formatted)) return false;
+
+  const digits = stripCnj(value);
+  if (digits.length !== 20) return false;
+  if (/^(\d)\1{19}$/.test(digits)) return false;
+
+  const n = digits.slice(0, 7);
+  const d = digits.slice(7, 9);
+  const a = digits.slice(9, 13);
+  const j = digits.slice(13, 14);
+  const tr = digits.slice(14, 16);
+  const o = digits.slice(16, 20);
+
+  const baseNumber = BigInt(`${n}${a}${j}${tr}${o}00`);
+  const remainder = Number(baseNumber % BigInt(97));
+  const expectedDv = String(98 - remainder).padStart(2, "0");
+
+  return d === expectedDv;
 }
 
 export const processFormSchema = z.object({

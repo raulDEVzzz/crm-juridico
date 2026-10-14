@@ -14,9 +14,7 @@ import {
   Lock,
   ArrowRight,
 } from "lucide-react";
-
-const whatsappUrl =
-  "https://api.whatsapp.com/message/DO2RHGYHLCLVH1?autoload=1&app_absent=0";
+import { whatsappUrl } from "@/lib/constants";
 
 const navLinks = [
   {

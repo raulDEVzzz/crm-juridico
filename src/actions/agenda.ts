@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { serializeProcess } from "@/lib/serializers/process";
 import {
   eventFormSchema,
+  eventStatusEnum,
   parseEventDateTime,
 } from "@/lib/validations/agenda";
 import type { ActionState } from "@/types/actions";
@@ -112,17 +113,22 @@ export async function createEvent(
     }
   }
 
-  await prisma.event.create({
-    data: {
-      userId,
-      title: parsed.data.title,
-      description: parsed.data.description || null,
-      eventDate,
-      type: parsed.data.type as EventType,
-      status: parsed.data.status as EventStatus,
-      processId: parsed.data.processId || null,
-    },
-  });
+  try {
+    await prisma.event.create({
+      data: {
+        userId,
+        title: parsed.data.title,
+        description: parsed.data.description || null,
+        eventDate,
+        type: parsed.data.type as EventType,
+        status: parsed.data.status as EventStatus,
+        processId: parsed.data.processId || null,
+      },
+    });
+  } catch (error) {
+    console.error("Erro ao criar compromisso:", error);
+    return { success: false, message: "Erro ao criar o compromisso." };
+  }
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
@@ -146,6 +152,12 @@ export async function updateEventStatus(
   id: string,
   status: EventStatus
 ): Promise<ActionState> {
+  const parsedStatus = eventStatusEnum.safeParse(status);
+  if (!parsedStatus.success) {
+    return { success: false, message: "Status de compromisso inválido." };
+  }
+
+  const validStatus = parsedStatus.data;
   const userId = await getCurrentUserId();
 
   const event = await prisma.event.findFirst({
@@ -156,10 +168,15 @@ export async function updateEventStatus(
     return { success: false, message: "Compromisso não encontrado." };
   }
 
-  await prisma.event.update({
-    where: { id },
-    data: { status },
-  });
+  try {
+    await prisma.event.update({
+      where: { id },
+      data: { status: validStatus },
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar status:", error);
+    return { success: false, message: "Erro ao atualizar status do compromisso." };
+  }
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");
@@ -167,9 +184,9 @@ export async function updateEventStatus(
   return {
     success: true,
     message:
-      status === "CONCLUIDO"
+      validStatus === "CONCLUIDO"
         ? "Compromisso marcado como concluído."
-        : "Compromisso reaberto.",
+        : "Compromisso reaberto com sucesso.",
   };
 }
 
@@ -184,7 +201,12 @@ export async function deleteEvent(id: string): Promise<ActionState> {
     return { success: false, message: "Compromisso não encontrado." };
   }
 
-  await prisma.event.delete({ where: { id } });
+  try {
+    await prisma.event.delete({ where: { id } });
+  } catch (error) {
+    console.error("Erro ao excluir compromisso:", error);
+    return { success: false, message: "Erro ao excluir o compromisso." };
+  }
 
   revalidatePath("/agenda");
   revalidatePath("/dashboard");

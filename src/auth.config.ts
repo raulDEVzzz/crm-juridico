@@ -27,7 +27,10 @@ export const authConfig = {
         return true;
       }
 
-      if (pathname.startsWith("/api/auth")) {
+      if (
+        pathname.startsWith("/api/auth") ||
+        pathname.startsWith("/api/cron")
+      ) {
         return true;
       }
 

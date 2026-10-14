@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Plus, Users } from "lucide-react";
+import { CalendarDays, Plus, Users } from "lucide-react";
 
-import { getClients } from "@/actions/clients";
+import { getUpcomingEvents } from "@/actions/agenda";
+import { getClients, getClientsWithBirthDate } from "@/actions/clients";
 import { BirthdayList } from "@/components/dashboard/birthday-list";
+import { UpcomingEvents } from "@/components/dashboard/upcoming-events";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +15,12 @@ import {
 import { filterUpcomingBirthdays } from "@/lib/birthdays";
 
 export default async function DashboardPage() {
-  const clients = await getClients();
-  const upcomingBirthdays = filterUpcomingBirthdays(clients, 7);
+  const [clients, birthdayClients, upcomingEvents] = await Promise.all([
+    getClients(),
+    getClientsWithBirthDate(),
+    getUpcomingEvents(),
+  ]);
+  const upcomingBirthdays = filterUpcomingBirthdays(birthdayClients, 7);
   
   // Filtramos garantindo que o birthDate não seja null para satisfazer a tipagem do componente
   const todayBirthdays = upcomingBirthdays
@@ -33,7 +39,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Acompanhe aniversariantes e gerencie seus clientes.
+            Acompanhe compromissos, aniversariantes e seus clientes.
           </p>
         </div>
         <Button asChild>
@@ -66,13 +72,16 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Próximos 7 dias</CardTitle>
+            <CardTitle className="text-sm font-medium">Compromissos pendentes</CardTitle>
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-amber-600">{nextBirthdays.length}</p>
+            <p className="text-3xl font-bold text-amber-600">{upcomingEvents.length}</p>
           </CardContent>
         </Card>
       </div>
+
+      <UpcomingEvents events={upcomingEvents.slice(0, 3)} />
 
       <BirthdayList
         title="Aniversariantes de hoje"

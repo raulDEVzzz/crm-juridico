@@ -22,6 +22,22 @@ export async function getClients() {
   });
 }
 
+/** Minimal dataset used by the dashboard's birthday widgets. */
+export async function getClientsWithBirthDate() {
+  const userId = await getCurrentUserId();
+
+  return prisma.client.findMany({
+    where: { userId, birthDate: { not: null } },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      whatsapp: true,
+      birthDate: true,
+    },
+  });
+}
+
 export async function getClientById(id: string) {
   const userId = await getCurrentUserId();
 
@@ -193,11 +209,13 @@ export async function deleteClient(id: string): Promise<ActionState> {
       prisma.client.delete({ where: { id } }),
     ]);
     await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
-    await drainStorageDeletionJobs();
   } catch (error) {
-    console.error("Erro ao excluir cliente e documentos:", error);
+    console.error("Erro ao excluir cliente e documentos no banco:", error);
     return { success: false, message: "Não foi possível excluir o cliente." };
   }
+
+  // Não bloqueia a resposta de sucesso caso a fila de storage falhe momentaneamente
+  drainStorageDeletionJobs().catch(console.error);
 
   revalidatePath("/dashboard");
   revalidatePath("/clients");

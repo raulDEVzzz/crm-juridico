@@ -5,7 +5,10 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildStorageKey, getStorage } from "@/lib/storage";
-import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
+import {
+  drainStorageDeletionJobs,
+  enqueueStorageDeletion,
+} from "@/lib/storage/cleanup";
 import {
   documentUploadSchema,
   sanitizeFileName,
@@ -112,6 +115,7 @@ export async function uploadDocument(
       } catch (cleanupError) {
         console.error("Erro ao desfazer upload sem registro; enfileirando limpeza:", cleanupError);
         await enqueueStorageDeletion([storageKey]).catch(() => undefined);
+        await drainStorageDeletionJobs().catch(() => undefined);
       }
     }
 
@@ -163,6 +167,7 @@ export async function deleteDocument(
   } catch (error) {
     console.error("Erro ao deletar arquivo do storage; enfileirando para retry:", error);
     await enqueueStorageDeletion([document.fileUrl]).catch(() => undefined);
+    await drainStorageDeletionJobs().catch(() => undefined);
   }
 
   revalidatePath(`/processes/${processId}`);
