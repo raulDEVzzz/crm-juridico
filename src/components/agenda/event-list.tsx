@@ -18,7 +18,8 @@ import {
   EVENT_STATUS_LABELS,
   EVENT_TYPE_LABELS,
 } from "@/lib/validations/agenda";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 
 type EventWithProcess = Event & {
   process: (Omit<Process, "value"> & { value: number | null; client: Client }) | null;
@@ -92,80 +93,90 @@ function EventCard({ event }: { event: EventWithProcess }) {
     });
   }
 
-  function handleDelete() {
-    const confirmed = window.confirm(
-      `Deseja excluir o compromisso "${event.title}"?`
-    );
-    if (!confirmed) return;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  function handleConfirmDelete() {
     startTransition(async () => {
       await deleteEvent(event.id);
+      setShowDeleteDialog(false);
     });
   }
 
   return (
-    <Card className={isDone ? "opacity-60" : isPast ? "border-amber-300" : ""}>
-      <CardHeader className="pb-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 flex-col items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <span className="text-lg font-bold leading-none">
-                {formatEventDay.format(event.eventDate)}
-              </span>
-              <span className="text-[10px] uppercase">
-                {formatEventMonth.format(event.eventDate)}
-              </span>
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <CardTitle className={`text-base ${isDone ? "line-through" : ""}`}>
-                  {event.title}
-                </CardTitle>
-                <Badge variant={typeVariant[event.type]}>
-                  {EVENT_TYPE_LABELS[event.type]}
-                </Badge>
-                <Badge variant={isDone ? "secondary" : "success"}>
-                  {EVENT_STATUS_LABELS[event.status]}
-                </Badge>
+    <>
+      <Card className={isDone ? "opacity-60" : isPast ? "border-amber-300" : ""}>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 flex-col items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <span className="text-lg font-bold leading-none">
+                  {formatEventDay.format(event.eventDate)}
+                </span>
+                <span className="text-[10px] uppercase">
+                  {formatEventMonth.format(event.eventDate)}
+                </span>
               </div>
-              <CardDescription className="mt-1 flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                {formatEventDateTime.format(event.eventDate)}
-              </CardDescription>
-              {event.process && (
-                <p className="mt-1 font-mono text-xs text-muted-foreground">
-                  Processo: {event.process.processNumber} —{" "}
-                  {event.process.client.name}
-                </p>
-              )}
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <CardTitle className={`text-base ${isDone ? "line-through" : ""}`}>
+                    {event.title}
+                  </CardTitle>
+                  <Badge variant={typeVariant[event.type]}>
+                    {EVENT_TYPE_LABELS[event.type]}
+                  </Badge>
+                  <Badge variant={isDone ? "secondary" : "success"}>
+                    {EVENT_STATUS_LABELS[event.status]}
+                  </Badge>
+                </div>
+                <CardDescription className="mt-1 flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {formatEventDateTime.format(event.eventDate)}
+                </CardDescription>
+                {event.process && (
+                  <p className="mt-1 font-mono text-xs text-muted-foreground">
+                    Processo: {event.process.processNumber} —{" "}
+                    {event.process.client.name}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isPending}
+                onClick={handleToggleStatus}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                {isDone ? "Reabrir" : "Concluir"}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={isPending}
+                onClick={() => setShowDeleteDialog(true)}
+                title="Excluir compromisso"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isPending}
-              onClick={handleToggleStatus}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              {isDone ? "Reabrir" : "Concluir"}
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={isPending}
-              onClick={handleDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      {event.description && (
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{event.description}</p>
-        </CardContent>
-      )}
-    </Card>
+        </CardHeader>
+        {event.description && (
+          <CardContent>
+            <p className="text-sm text-muted-foreground">{event.description}</p>
+          </CardContent>
+        )}
+      </Card>
+
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Excluir Compromisso"
+        description={`Deseja realmente remover o compromisso "${event.title}" da sua agenda?`}
+        isPending={isPending}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
   );
 }

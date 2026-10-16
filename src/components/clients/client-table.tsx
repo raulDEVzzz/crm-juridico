@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { formatDateBR } from "@/lib/dates";
 import { formatDocument, formatPhone } from "@/lib/validations/client";
@@ -55,15 +56,14 @@ export function ClientTable({ clients }: ClientTableProps) {
     });
   }, [clients, search]);
 
-  function handleDelete(id: string, name: string) {
-    const confirmed = window.confirm(
-      `Deseja realmente excluir o cliente "${name}"?`
-    );
+  const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
 
-    if (!confirmed) return;
+  function handleConfirmDelete() {
+    if (!clientToDelete) return;
 
     startTransition(async () => {
-      await deleteClient(id);
+      await deleteClient(clientToDelete.id);
+      setClientToDelete(null);
     });
   }
 
@@ -156,7 +156,7 @@ export function ClientTable({ clients }: ClientTableProps) {
                         variant="destructive"
                         size="sm"
                         disabled={isPending}
-                        onClick={() => handleDelete(client.id, client.name)}
+                        onClick={() => setClientToDelete({ id: client.id, name: client.name })}
                       >
                         <Trash2 className="h-4 w-4" />
                         Excluir
@@ -199,6 +199,15 @@ export function ClientTable({ clients }: ClientTableProps) {
           })}
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={!!clientToDelete}
+        onOpenChange={(open) => !open && setClientToDelete(null)}
+        title="Excluir Cliente"
+        description={`Deseja realmente excluir o cliente "${clientToDelete?.name}"? Esta ação é irreversível e excluirá também os processos e documentos vinculados.`}
+        isPending={isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

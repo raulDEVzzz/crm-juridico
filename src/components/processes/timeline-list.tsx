@@ -12,6 +12,7 @@ import {
   type ActionState,
 } from "@/actions/processes";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -147,49 +148,60 @@ function TimelineEntry({
   processId: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  function handleDelete() {
-    const confirmed = window.confirm("Deseja remover este andamento?");
-    if (!confirmed) return;
-
+  function handleConfirmDelete() {
     startTransition(async () => {
       await deleteTimelineEntry(processId, entry.id);
+      setShowDeleteDialog(false);
     });
   }
 
   return (
-    <div className="relative flex gap-4 pb-6 pl-10">
-      <div className="absolute left-2 top-1 flex h-7 w-7 items-center justify-center rounded-full border bg-background">
-        <Clock className="h-3.5 w-3.5 text-primary" />
-      </div>
-      <Card className="flex-1">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <CardTitle className="text-base">{entry.title}</CardTitle>
-              <CardDescription>
-                {format(entry.date, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
-                  locale: ptBR,
-                })}
-              </CardDescription>
+    <>
+      <div className="relative flex gap-4 pb-6 pl-10">
+        <div className="absolute left-2 top-1 flex h-7 w-7 items-center justify-center rounded-full border bg-background">
+          <Clock className="h-3.5 w-3.5 text-primary" />
+        </div>
+        <Card className="flex-1">
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle className="text-base">{entry.title}</CardTitle>
+                <CardDescription>
+                  {format(entry.date, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
+                    locale: ptBR,
+                  })}
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                disabled={isPending}
+                onClick={() => setShowDeleteDialog(true)}
+                title="Remover andamento"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              disabled={isPending}
-              onClick={handleDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        {entry.description && (
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{entry.description}</p>
-          </CardContent>
-        )}
-      </Card>
-    </div>
+          </CardHeader>
+          {entry.description && (
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{entry.description}</p>
+            </CardContent>
+          )}
+        </Card>
+      </div>
+
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Remover Andamento"
+        description={`Deseja realmente remover o andamento "${entry.title}"? Esta ação não poderá ser desfeita.`}
+        isPending={isPending}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
   );
 }

@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import { DocumentUploadZone } from "@/components/processes/document-upload-zone";
 
 interface DocumentListProps {
@@ -95,15 +96,12 @@ function DocumentItem({
 }) {
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  function handleDelete() {
-    const confirmed = window.confirm(
-      `Deseja remover o documento "${document.fileName}"?`
-    );
-    if (!confirmed) return;
-
+  function handleConfirmDelete() {
     startDeleteTransition(async () => {
       await deleteDocument(processId, document.id);
+      setShowDeleteDialog(false);
     });
   }
 
@@ -117,52 +115,64 @@ function DocumentItem({
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-              <File className="h-5 w-5 text-muted-foreground" />
+    <>
+      <Card>
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                <File className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-base">{document.fileName}</CardTitle>
+                <CardDescription>
+                  Enviado em{" "}
+                  {format(document.uploadedAt, "dd/MM/yyyy 'às' HH:mm", {
+                    locale: ptBR,
+                  })}
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-base">{document.fileName}</CardTitle>
-              <CardDescription>
-                Enviado em{" "}
-                {format(document.uploadedAt, "dd/MM/yyyy 'às' HH:mm", {
-                  locale: ptBR,
-                })}
-              </CardDescription>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {document.category && (
-              <Badge variant="outline">{document.category}</Badge>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isDownloading}
-              onClick={handleDownload}
-            >
-              {isDownloading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
+            <div className="flex items-center gap-2">
+              {document.category && (
+                <Badge variant="outline">{document.category}</Badge>
               )}
-              Baixar
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-              disabled={isDeleting}
-              onClick={handleDelete}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isDownloading}
+                onClick={handleDownload}
+              >
+                {isDownloading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                Baixar
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                disabled={isDeleting}
+                onClick={() => setShowDeleteDialog(true)}
+                title="Remover documento"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </CardHeader>
-    </Card>
+        </CardHeader>
+      </Card>
+
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Remover Documento"
+        description={`Deseja realmente remover o arquivo "${document.fileName}"? Esta ação excluirá permanentemente o arquivo do storage.`}
+        isPending={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
+    </>
   );
 }

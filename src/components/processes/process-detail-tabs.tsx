@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Edit, Trash2 } from "lucide-react";
 import type { Client, Document, Process, ProcessTimeline } from "@prisma/client";
 
@@ -11,6 +11,7 @@ import { DocumentList } from "@/components/processes/document-list";
 import { TimelineList } from "@/components/processes/timeline-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -47,15 +48,12 @@ const statusVariant: Record<
 export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  function handleDelete() {
-    const confirmed = window.confirm(
-      `Deseja excluir o processo ${process.processNumber}?`
-    );
-    if (!confirmed) return;
-
+  function handleConfirmDelete() {
     startTransition(async () => {
       await deleteProcess(process.id);
+      setShowDeleteDialog(false);
       router.push("/processes");
     });
   }
@@ -88,7 +86,7 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
             variant="destructive"
             size="sm"
             disabled={isPending}
-            onClick={handleDelete}
+            onClick={() => setShowDeleteDialog(true)}
           >
             <Trash2 className="h-4 w-4" />
             Excluir
@@ -160,6 +158,15 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
           />
         </TabsContent>
       </Tabs>
+
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Excluir Processo Judicial"
+        description={`Deseja realmente excluir o processo nº ${process.processNumber}? Todos os andamentos e documentos vinculados serão excluídos permanentemente.`}
+        isPending={isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

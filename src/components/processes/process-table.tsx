@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { formatTimestampBR } from "@/lib/dates";
 import {
@@ -53,14 +54,14 @@ export function ProcessTable({ processes }: ProcessTableProps) {
     );
   }, [processes, search]);
 
-  function handleDelete(id: string, processNumber: string) {
-    const confirmed = window.confirm(
-      `Deseja excluir o processo ${processNumber}?`
-    );
-    if (!confirmed) return;
+  const [processToDelete, setProcessToDelete] = useState<{ id: string; processNumber: string } | null>(null);
+
+  function handleConfirmDelete() {
+    if (!processToDelete) return;
 
     startTransition(async () => {
-      await deleteProcess(id);
+      await deleteProcess(processToDelete.id);
+      setProcessToDelete(null);
     });
   }
 
@@ -133,7 +134,10 @@ export function ProcessTable({ processes }: ProcessTableProps) {
                       size="sm"
                       disabled={isPending}
                       onClick={() =>
-                        handleDelete(process.id, process.processNumber)
+                        setProcessToDelete({
+                          id: process.id,
+                          processNumber: process.processNumber,
+                        })
                       }
                     >
                       <Trash2 className="h-4 w-4" />
@@ -171,6 +175,15 @@ export function ProcessTable({ processes }: ProcessTableProps) {
           ))}
         </div>
       )}
+
+      <ConfirmDeleteDialog
+        open={!!processToDelete}
+        onOpenChange={(open) => !open && setProcessToDelete(null)}
+        title="Excluir Processo Judicial"
+        description={`Deseja realmente excluir o processo nº ${processToDelete?.processNumber}? Todos os andamentos e documentos vinculados serão excluídos permanentemente.`}
+        isPending={isPending}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
