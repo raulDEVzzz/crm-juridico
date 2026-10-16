@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { EventStatus, EventType } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
+import { getBrasiliaDateParts } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
 import { serializeProcess } from "@/lib/serializers/process";
 import {
@@ -49,6 +50,42 @@ export async function getUpcomingEvents() {
     orderBy: { eventDate: "asc" },
   });
   return events.map((event) => ({ ...event, process: event.process ? serializeProcess(event.process) : null }));
+}
+
+/**
+ * Retorna os prazos processuais urgentes:
+ * 1. Prazos vencidos / atrasados (eventDate < agora) com status PENDENTE
+ * 2. Prazos que vencem hoje
+ * 3. Prazos que vencem nas próximas 48 horas (fuso horário de Brasília)
+ */
+export async function getUrgentDeadlines() {
+  const userId = await getCurrentUserId();
+  const { year, month, day } = getBrasiliaDateParts();
+
+  // Limite das próximas 48h: fim do segundo dia posterior (às 23:59:59 em Brasília / UTC-3)
+  const endOfIn2Days = new Date(Date.UTC(year, month, day + 2, 23 + 3, 59, 59, 999));
+
+  const events = await prisma.event.findMany({
+    where: {
+      userId,
+      type: "PRAZO",
+      status: "PENDENTE",
+      eventDate: {
+        lte: endOfIn2Days,
+      },
+    },
+    include: {
+      process: {
+        include: { client: true },
+      },
+    },
+    orderBy: { eventDate: "asc" },
+  });
+
+  return events.map((event) => ({
+    ...event,
+    process: event.process ? serializeProcess(event.process) : null,
+  }));
 }
 
 export async function getEventById(id: string) {

@@ -37,6 +37,7 @@ async function main() {
       name: "Maria Silva",
       personType: "PF" as const,
       document: "12345678901",
+      email: "maria.silva@exemplo.com",
       phone: "11999887766",
       whatsapp: "11999887766",
       birthDate: new Date(currentYear, today.getMonth(), today.getDate()),
@@ -46,6 +47,7 @@ async function main() {
       name: "João Santos",
       personType: "PF" as const,
       document: "98765432100",
+      email: "joao.santos@exemplo.com",
       phone: "21988776655",
       whatsapp: null,
       birthDate: new Date(currentYear, today.getMonth(), today.getDate() + 3),
@@ -55,6 +57,7 @@ async function main() {
       name: "Escritório ABC Ltda",
       personType: "PJ" as const,
       document: "11222333000144",
+      email: "contato@escritorioabc.com.br",
       phone: "1133445566",
       whatsapp: "11988776655",
       birthDate: new Date(currentYear, today.getMonth(), today.getDate() + 5),
@@ -80,7 +83,7 @@ async function main() {
     clients.push(created);
   }
 
-  const process = await prisma.process.upsert({
+  const legalProcess = await prisma.process.upsert({
     where: {
       clientId_processNumber: {
         clientId: clients[0].id,
@@ -102,13 +105,13 @@ async function main() {
   await prisma.processTimeline.createMany({
     data: [
       {
-        processId: process.id,
+        processId: legalProcess.id,
         title: "Distribuição",
         description: "Processo distribuído ao juízo.",
         date: new Date("2024-03-15T10:00:00"),
       },
       {
-        processId: process.id,
+        processId: legalProcess.id,
         title: "Publicação",
         description: "Publicado no DJE.",
         date: new Date("2024-04-02T14:30:00"),
@@ -123,11 +126,11 @@ async function main() {
     create: {
       id: "seed-doc-1",
       fileName: "peticao-inicial.pdf",
-      fileUrl: `uploads/${user.id}/${process.id}/seed-peticao-inicial.pdf`,
+      fileUrl: `uploads/${user.id}/${legalProcess.id}/seed-peticao-inicial.pdf`,
       category: "Petição",
       userId: user.id,
       clientId: clients[0].id,
-      processId: process.id,
+      processId: legalProcess.id,
     },
   });
 
@@ -140,7 +143,7 @@ async function main() {
         type: "AUDIENCIA",
         status: "PENDENTE",
         userId: user.id,
-        processId: process.id,
+        processId: legalProcess.id,
       },
       {
         title: "Prazo para contestação",
@@ -149,7 +152,7 @@ async function main() {
         type: "PRAZO",
         status: "PENDENTE",
         userId: user.id,
-        processId: process.id,
+        processId: legalProcess.id,
       },
       {
         title: "Reunião com cliente",

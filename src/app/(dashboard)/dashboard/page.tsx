@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { CalendarDays, Plus, Users } from "lucide-react";
 
-import { getUpcomingEvents } from "@/actions/agenda";
+import { getUpcomingEvents, getUrgentDeadlines } from "@/actions/agenda";
 import { getClients, getClientsWithBirthDate } from "@/actions/clients";
 import { BirthdayList } from "@/components/dashboard/birthday-list";
 import { UpcomingEvents } from "@/components/dashboard/upcoming-events";
+import { UrgentDeadlines } from "@/components/dashboard/urgent-deadlines";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,10 +16,11 @@ import {
 import { filterUpcomingBirthdays } from "@/lib/birthdays";
 
 export default async function DashboardPage() {
-  const [clients, birthdayClients, upcomingEvents] = await Promise.all([
+  const [clients, birthdayClients, upcomingEvents, urgentDeadlines] = await Promise.all([
     getClients(),
     getClientsWithBirthDate(),
     getUpcomingEvents(),
+    getUrgentDeadlines(),
   ]);
   const upcomingBirthdays = filterUpcomingBirthdays(birthdayClients, 7);
   
@@ -49,6 +51,9 @@ export default async function DashboardPage() {
           </Link>
         </Button>
       </div>
+
+      {/* Alerta Prioritário: Gestão de Prazos Fatais e Urgentes */}
+      <UrgentDeadlines deadlines={urgentDeadlines} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
