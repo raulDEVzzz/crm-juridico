@@ -62,11 +62,13 @@ model Client {
   name       String
   personType PersonType @map("person_type")
   document   String
+  email      String?
   phone      String
   whatsapp   String?
   birthDate  DateTime?  @map("birth_date") @db.Date
   notes      String?
   createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at")
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -77,6 +79,7 @@ model Client {
   @@unique([userId, document])
   @@index([userId])
   @@index([birthDate])
+  @@index([userId, name])
   @@map("clients")
 }
 
@@ -101,6 +104,8 @@ model Process {
   @@unique([clientId, processNumber])
   @@index([clientId])
   @@index([status])
+  @@index([area])
+  @@index([clientId, area])
   @@map("processes")
 }
 
