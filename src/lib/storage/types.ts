@@ -9,11 +9,18 @@ export interface UploadResult {
   key: string;
 }
 
+export interface ReadStreamResult {
+  stream: ReadableStream;
+  contentType: string;
+  contentLength: number;
+}
+
 export interface StorageAdapter {
   readonly driver: "local" | "s3";
   upload(params: UploadParams): Promise<UploadResult>;
   getSignedUrl(key: string, expiresInSeconds?: number, originalName?: string): Promise<string>;
   readFile(key: string): Promise<{ buffer: Buffer; contentType: string }>;
+  createReadStream(key: string): Promise<ReadStreamResult>;
   delete(key: string): Promise<void>;
 }
 

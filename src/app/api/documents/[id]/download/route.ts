@@ -31,13 +31,15 @@ export async function GET(_request: Request, { params }: RouteParams) {
       return NextResponse.redirect(signedUrl);
     }
 
-    const { buffer, contentType } = await storage.readFile(document.fileUrl);
+    const { stream, contentType, contentLength } = await storage.createReadStream(document.fileUrl);
+    const encodedFileName = encodeURIComponent(document.fileName);
 
-    return new NextResponse(new Uint8Array(buffer), {
+    return new Response(stream, {
       status: 200,
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(document.fileName)}"`,
+        "Content-Length": contentLength.toString(),
+        "Content-Disposition": `attachment; filename="${encodedFileName}"; filename*=UTF-8''${encodedFileName}`,
         "Cache-Control": "private, no-cache, no-store, must-revalidate",
       },
     });

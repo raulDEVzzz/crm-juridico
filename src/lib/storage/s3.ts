@@ -6,7 +6,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-import type { StorageAdapter, UploadParams, UploadResult } from "./types";
+import type { ReadStreamResult, StorageAdapter, UploadParams, UploadResult } from "./types";
 
 export class S3StorageAdapter implements StorageAdapter {
   readonly driver = "s3" as const;
@@ -69,6 +69,26 @@ export class S3StorageAdapter implements StorageAdapter {
     return getSignedUrl(this.client, command, {
       expiresIn: expiresInSeconds ?? this.defaultExpiresIn,
     });
+  }
+
+  async createReadStream(key: string): Promise<ReadStreamResult> {
+    const response = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      })
+    );
+
+    const stream = response.Body?.transformToWebStream();
+    if (!stream) {
+      throw new Error("Não foi possível inicializar o stream do arquivo no S3.");
+    }
+
+    return {
+      stream: stream as ReadableStream,
+      contentType: response.ContentType || "application/octet-stream",
+      contentLength: response.ContentLength || 0,
+    };
   }
 
   async readFile(key: string): Promise<{ buffer: Buffer; contentType: string }> {

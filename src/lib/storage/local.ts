@@ -1,7 +1,18 @@
-import { mkdir, readFile, unlink, writeFile } from "fs/promises";
+import { createReadStream } from "fs";
+import { mkdir, readFile, stat, unlink, writeFile } from "fs/promises";
 import path from "path";
+import { Readable } from "stream";
 
-import type { StorageAdapter, UploadParams, UploadResult } from "./types";
+import type { ReadStreamResult, StorageAdapter, UploadParams, UploadResult } from "./types";
+
+const MIME_MAP: Record<string, string> = {
+  ".pdf": "application/pdf",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+};
 
 export class LocalStorageAdapter implements StorageAdapter {
   readonly driver = "local" as const;
@@ -33,10 +44,24 @@ export class LocalStorageAdapter implements StorageAdapter {
     return { key: params.key };
   }
 
-  async getSignedUrl(key: string, expiresInSeconds?: number, _originalName?: string): Promise<string> {
+  async getSignedUrl(key: string): Promise<string> {
     // Em ambiente local, o download é feito via Route Handler autenticado.
     // Retornamos a key para o handler resolver o stream diretamente.
     return key;
+  }
+
+  async createReadStream(key: string): Promise<ReadStreamResult> {
+    const filePath = this.resolvePath(key);
+    const fileStat = await stat(filePath);
+    const nodeStream = createReadStream(filePath);
+    const webStream = Readable.toWeb(nodeStream) as ReadableStream;
+    const extension = path.extname(key).toLowerCase();
+
+    return {
+      stream: webStream,
+      contentType: MIME_MAP[extension] || "application/octet-stream",
+      contentLength: fileStat.size,
+    };
   }
 
   async readFile(key: string): Promise<{ buffer: Buffer; contentType: string }> {
@@ -44,18 +69,9 @@ export class LocalStorageAdapter implements StorageAdapter {
     const buffer = await readFile(filePath);
     const extension = path.extname(key).toLowerCase();
 
-    const mimeMap: Record<string, string> = {
-      ".pdf": "application/pdf",
-      ".docx":
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      ".jpg": "image/jpeg",
-      ".jpeg": "image/jpeg",
-      ".png": "image/png",
-    };
-
     return {
       buffer,
-      contentType: mimeMap[extension] || "application/octet-stream",
+      contentType: MIME_MAP[extension] || "application/octet-stream",
     };
   }
 
