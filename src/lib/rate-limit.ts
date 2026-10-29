@@ -2,11 +2,20 @@ import { prisma } from "@/lib/prisma";
 import { randomUUID } from "node:crypto";
 
 export const ACCOUNT_MAX_ATTEMPTS = 5;
-export const IP_MAX_ATTEMPTS = 20;
+export const ACCOUNT_IP_MAX_ATTEMPTS = 20;
+export const IP_MAX_ATTEMPTS = 100;
 export const WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+
+export class RateLimitUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RateLimitUnavailableError";
+  }
+}
 
 /**
  * Verifica atomicamente se uma chave de rate limit está atualmente bloqueada.
+ * Em caso de falha do banco, lança erro para que o login falhe fechado.
  */
 export async function isKeyBlocked(key: string): Promise<boolean> {
   try {
@@ -21,7 +30,9 @@ export async function isKeyBlocked(key: string): Promise<boolean> {
     return result.length > 0;
   } catch (error) {
     console.error("Erro ao verificar bloqueio de rate limit:", error);
-    return false;
+    throw new RateLimitUnavailableError(
+      "Não foi possível verificar o rate limit."
+    );
   }
 }
 
@@ -75,7 +86,9 @@ export async function recordFailedAttempt(
     };
   } catch (error) {
     console.error("Erro ao registrar tentativa falha de login:", error);
-    return { blocked: false, attempts: 1, blockedUntil: null };
+    throw new RateLimitUnavailableError(
+      "Não foi possível registrar a tentativa de login."
+    );
   }
 }
 
