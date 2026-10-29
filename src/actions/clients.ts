@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { PersonType, Prisma } from "@prisma/client";
 
@@ -214,8 +215,10 @@ export async function deleteClient(id: string): Promise<ActionState> {
     return { success: false, message: "Não foi possível excluir o cliente." };
   }
 
-  // Não bloqueia a resposta de sucesso caso a fila de storage falhe momentaneamente
-  drainStorageDeletionJobs().catch(console.error);
+  // Agenda a drenagem da fila em background com garantia de execução no runtime serverless
+  after(async () => {
+    await drainStorageDeletionJobs().catch(console.error);
+  });
 
   revalidatePath("/dashboard");
   revalidatePath("/clients");
