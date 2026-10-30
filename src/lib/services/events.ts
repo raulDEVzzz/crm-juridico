@@ -29,6 +29,68 @@ export interface ListEventsParams extends PaginationParams {
   status?: EventStatus;
 }
 
+export type AgendaSection = "atrasados" | "proximos" | "concluidos";
+
+export interface ListAgendaSectionParams extends PaginationParams {
+  now?: Date;
+}
+
+/** Lista paginada de uma das três seções da agenda. */
+export async function listAgendaSectionForUser(
+  db: PrismaClient,
+  userId: string,
+  section: AgendaSection,
+  params: ListAgendaSectionParams = {}
+): Promise<Page<EventWithProcess>> {
+  const { take, cursor } = normalizePagination(params);
+  const now = params.now ?? new Date();
+
+  const { status, eventDate, orderBy } = {
+    atrasados: {
+      status: "PENDENTE" as const,
+      eventDate: { lt: now },
+      orderBy: [
+        { eventDate: "desc" as const },
+        { id: "desc" as const },
+      ],
+    },
+    proximos: {
+      status: "PENDENTE" as const,
+      eventDate: { gte: now },
+      orderBy: [
+        { eventDate: "asc" as const },
+        { id: "asc" as const },
+      ],
+    },
+    concluidos: {
+      status: "CONCLUIDO" as const,
+      eventDate: undefined,
+      orderBy: [
+        { eventDate: "desc" as const },
+        { id: "desc" as const },
+      ],
+    },
+  }[section];
+
+  const events = await db.event.findMany({
+    where: {
+      userId,
+      status,
+      ...(eventDate ? { eventDate } : {}),
+    },
+    include: {
+      process: {
+        include: { client: true },
+      },
+    },
+    orderBy,
+    take: take + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+
+  return buildPage(events, take);
+}
+
 /** Lista paginada de compromissos, com filtro opcional de status. */
 export async function listEventsForUser(
   db: PrismaClient,
