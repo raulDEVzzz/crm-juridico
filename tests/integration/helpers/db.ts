@@ -72,7 +72,7 @@ export async function createUser(overrides: { name?: string } = {}) {
 
 export async function createClient(
   userId: string,
-  overrides: { name?: string } = {}
+  overrides: { name?: string; birthDate?: Date } = {}
 ) {
   return testDb.client.create({
     data: {
@@ -81,6 +81,7 @@ export async function createClient(
       personType: "PF" as PersonType,
       document: randomUUID().replace(/-/g, "").slice(0, 11),
       phone: "11999999999",
+      birthDate: overrides.birthDate ?? null,
     },
   });
 }
