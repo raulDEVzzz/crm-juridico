@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Edit, MessageCircle, Search, Trash2, User } from "lucide-react";
 import type { Client } from "@prisma/client";
 
@@ -23,39 +23,12 @@ import { getWhatsAppNumber } from "@/lib/whatsapp";
 
 interface ClientTableProps {
   clients: Client[];
+  /** Termo aplicado no servidor; usado apenas para o estado vazio. */
+  search?: string;
 }
 
-export function ClientTable({ clients }: ClientTableProps) {
-  const [search, setSearch] = useState("");
+export function ClientTable({ clients, search = "" }: ClientTableProps) {
   const [isPending, startTransition] = useTransition();
-
-  const filtered = useMemo(() => {
-    const term = search.trim();
-    if (!term) return clients;
-
-    const normalizedTerm = term
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-
-    const digitsOnly = term.replace(/\D/g, "");
-
-    return clients.filter((client) => {
-      const normalizedName = client.name
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-
-      const nameMatch = normalizedName.includes(normalizedTerm);
-      const docMatch = digitsOnly.length > 0 && client.document.includes(digitsOnly);
-      const phoneMatch = digitsOnly.length > 0 && client.phone.includes(digitsOnly);
-      const whatsappMatch =
-        digitsOnly.length > 0 && !!client.whatsapp && client.whatsapp.includes(digitsOnly);
-
-      return nameMatch || docMatch || phoneMatch || whatsappMatch;
-    });
-  }, [clients, search]);
-
   const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -75,57 +48,50 @@ export function ClientTable({ clients }: ClientTableProps) {
     });
   }
 
-  if (clients.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-            <User className="h-7 w-7 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="font-medium">Nenhum cliente cadastrado</p>
-            <p className="text-sm text-muted-foreground">
-              Comece adicionando seu primeiro cliente ao CRM.
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/clients/new">Cadastrar cliente</Link>
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      {/* Barra de busca */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nome, CPF/CNPJ ou telefone..."
-          className="pl-9"
-        />
-      </div>
+      {/* A busca é enviada ao servidor; o cursor é descartado ao filtrar. */}
+      <form action="/clients" method="get" className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            name="q"
+            defaultValue={search}
+            placeholder="Buscar por nome, CPF/CNPJ ou telefone..."
+            className="pl-9"
+          />
+        </div>
+        <Button type="submit" variant="outline">
+          Buscar
+        </Button>
+      </form>
 
-      {filtered.length === 0 ? (
+      {clients.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
               <User className="h-7 w-7 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium">Nenhum cliente encontrado</p>
+              <p className="font-medium">
+                {search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado"}
+              </p>
               <p className="text-sm text-muted-foreground">
-                Tente outro termo de busca.
+                {search
+                  ? "Tente outro termo de busca."
+                  : "Comece adicionando seu primeiro cliente ao CRM."}
               </p>
             </div>
+            {!search && (
+              <Button asChild>
+                <Link href="/clients/new">Cadastrar cliente</Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filtered.map((client) => {
+          {clients.map((client) => {
             // Link WhatsApp direto — abre o chat sem nenhuma mensagem pré-definida
             const whatsappNumber = getWhatsAppNumber(client.phone, client.whatsapp);
             const whatsappLink = `https://wa.me/${whatsappNumber}`;

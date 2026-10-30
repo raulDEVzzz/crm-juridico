@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, Plus, Users } from "lucide-react";
 
-import { getUpcomingEvents, getUrgentDeadlines } from "@/actions/agenda";
-import { getClients, getClientsWithBirthDate } from "@/actions/clients";
+import { getDashboardData } from "@/actions/dashboard";
 import { BirthdayList } from "@/components/dashboard/birthday-list";
 import { UpcomingEvents } from "@/components/dashboard/upcoming-events";
 import { UrgentDeadlines } from "@/components/dashboard/urgent-deadlines";
@@ -16,24 +15,17 @@ import {
 import { filterUpcomingBirthdays } from "@/lib/birthdays";
 
 export default async function DashboardPage() {
-  const [clients, birthdayClients, upcomingEvents, urgentDeadlines] = await Promise.all([
-    getClients(),
-    getClientsWithBirthDate(),
-    getUpcomingEvents(),
-    getUrgentDeadlines(),
-  ]);
-  const upcomingBirthdays = filterUpcomingBirthdays(birthdayClients, 7);
-  
-  // Filtramos garantindo que o birthDate não seja null para satisfazer a tipagem do componente
-  const todayBirthdays = upcomingBirthdays
-    .filter((client) => client.isToday && client.birthDate !== null) as Array<
-      Omit<typeof upcomingBirthdays[number], "birthDate"> & { birthDate: Date }
-    >;
+  const {
+    totalClients,
+    pendingEvents,
+    upcomingEvents,
+    birthdayClients,
+    urgentDeadlines,
+  } = await getDashboardData();
 
-  const nextBirthdays = upcomingBirthdays
-    .filter((client) => !client.isToday && client.birthDate !== null) as Array<
-      Omit<typeof upcomingBirthdays[number], "birthDate"> & { birthDate: Date }
-    >;
+  const upcomingBirthdays = filterUpcomingBirthdays(birthdayClients, 7);
+  const todayBirthdays = upcomingBirthdays.filter((client) => client.isToday);
+  const nextBirthdays = upcomingBirthdays.filter((client) => !client.isToday);
 
   return (
     <div className="space-y-8">
@@ -62,7 +54,7 @@ export default async function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{clients.length}</p>
+            <p className="text-3xl font-bold">{totalClients}</p>
           </CardContent>
         </Card>
 
@@ -81,12 +73,12 @@ export default async function DashboardPage() {
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-amber-600">{upcomingEvents.length}</p>
+            <p className="text-3xl font-bold text-amber-600">{pendingEvents}</p>
           </CardContent>
         </Card>
       </div>
 
-      <UpcomingEvents events={upcomingEvents.slice(0, 3)} />
+      <UpcomingEvents events={upcomingEvents} />
 
       <BirthdayList
         title="Aniversariantes de hoje"

@@ -11,6 +11,10 @@ import { prisma } from "@/lib/prisma";
 import {
   deleteClientForUser,
   getClientByIdForUser,
+  getClientsWithBirthdayWindowForUser,
+  listClientOptionsForUser,
+  listClientsForUser,
+  type ListClientsParams,
 } from "@/lib/services/clients";
 import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
 import { clientFormSchema } from "@/lib/validations/client";
@@ -18,29 +22,24 @@ import type { ActionState } from "@/types/actions";
 
 export type { ActionState };
 
-export async function getClients() {
+export async function getClients(params: ListClientsParams = {}) {
   const userId = await getCurrentUserId();
-
-  return prisma.client.findMany({
-    where: { userId },
-    orderBy: { name: "asc" },
-  });
+  return listClientsForUser(prisma, userId, params);
 }
 
-/** Minimal dataset used by the dashboard's birthday widgets. */
-export async function getClientsWithBirthDate() {
+/** Opções leves para selects de formulários. */
+export async function getClientOptions() {
   const userId = await getCurrentUserId();
+  return listClientOptionsForUser(prisma, userId);
+}
 
-  return prisma.client.findMany({
-    where: { userId, birthDate: { not: null } },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      whatsapp: true,
-      birthDate: true,
-    },
-  });
+/**
+ * Aniversariantes já filtrados no banco pela janela de dias.
+ * Usado pelo dashboard para não carregar todos os clientes.
+ */
+export async function getClientsWithBirthDate(daysAhead = 7) {
+  const userId = await getCurrentUserId();
+  return getClientsWithBirthdayWindowForUser(prisma, userId, daysAhead);
 }
 
 export async function getClientById(id: string) {

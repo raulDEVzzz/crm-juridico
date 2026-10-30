@@ -1,9 +1,127 @@
-import type { PrismaClient } from "@prisma/client";
+import { Prisma, type Client, type PrismaClient } from "@prisma/client";
 
+import {
+  getBirthdayMonthDayWindow,
+  isLeapYear,
+} from "@/lib/birthdays";
 import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import { countPendingDeadlinesForClient } from "@/lib/services/deadlines";
+import {
+  buildPage,
+  normalizePagination,
+  type Page,
+  type PaginationParams,
+} from "@/lib/services/pagination";
 
 type EnqueueStorageDeletion = typeof enqueueStorageDeletion;
+
+export interface ListClientsParams extends PaginationParams {
+  search?: string;
+}
+
+export interface ClientOption {
+  id: string;
+  name: string;
+}
+
+export interface BirthdayClientRecord {
+  id: string;
+  name: string;
+  phone: string;
+  whatsapp: string | null;
+  birthDate: Date;
+}
+
+/** Lista paginada de clientes com busca executada no banco. */
+export async function listClientsForUser(
+  db: PrismaClient,
+  userId: string,
+  params: ListClientsParams = {}
+): Promise<Page<Client>> {
+  const { take, cursor } = normalizePagination(params);
+  const term = params.search?.trim();
+  const digits = term?.replace(/\D/g, "") ?? "";
+
+  const where: Prisma.ClientWhereInput = { userId };
+
+  if (term) {
+    where.OR = [
+      { name: { contains: term, mode: "insensitive" } },
+      ...(digits
+        ? [
+            { document: { contains: digits } },
+            { phone: { contains: digits } },
+            { whatsapp: { contains: digits } },
+          ]
+        : []),
+    ];
+  }
+
+  const clients = await db.client.findMany({
+    where,
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    take: take + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+
+  return buildPage(clients, take);
+}
+
+/** Opções leves para selects de formulários. */
+export async function listClientOptionsForUser(
+  db: PrismaClient,
+  userId: string
+): Promise<ClientOption[]> {
+  return db.client.findMany({
+    where: { userId },
+    select: { id: true, name: true },
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+  });
+}
+
+/**
+ * Busca no banco somente os aniversariantes da janela informada (MM-DD).
+ * O filtro lida com a virada do ano e com 29/02 em anos não bissextos.
+ */
+export async function getClientsWithBirthdayWindowForUser(
+  db: PrismaClient,
+  userId: string,
+  daysAhead = 7,
+  referenceDate = new Date()
+): Promise<BirthdayClientRecord[]> {
+  const { startMd, endMd, wrapsYear, referenceYear } =
+    getBirthdayMonthDayWindow(daysAhead, referenceDate);
+  const leap = isLeapYear(referenceYear);
+
+  const range = wrapsYear
+    ? Prisma.sql`("birthday_clients"."md" >= ${startMd} OR "birthday_clients"."md" <= ${endMd})`
+    : Prisma.sql`("birthday_clients"."md" >= ${startMd} AND "birthday_clients"."md" <= ${endMd})`;
+
+  return db.$queryRaw<BirthdayClientRecord[]>`
+    SELECT "id", "name", "phone", "whatsapp", "birthDate"
+    FROM (
+      SELECT
+        "id",
+        "name",
+        "phone",
+        "whatsapp",
+        "birth_date" AS "birthDate",
+        CASE
+          WHEN EXTRACT(MONTH FROM "birth_date") = 2
+            AND EXTRACT(DAY FROM "birth_date") = 29
+            AND ${leap} = false
+          THEN 228
+          ELSE
+            EXTRACT(MONTH FROM "birth_date")::int * 100
+            + EXTRACT(DAY FROM "birth_date")::int
+        END AS "md"
+      FROM "clients"
+      WHERE "user_id" = ${userId} AND "birth_date" IS NOT NULL
+    ) AS "birthday_clients"
+    WHERE ${range}
+    ORDER BY "birthDate" ASC, "id" ASC
+  `;
+}
 
 export type DeleteClientResult =
   | { status: "deleted"; storageKeys: string[] }

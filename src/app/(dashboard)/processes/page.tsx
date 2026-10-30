@@ -4,9 +4,17 @@ import { Plus } from "lucide-react";
 import { getProcesses } from "@/actions/processes";
 import { ProcessTable } from "@/components/processes/process-table";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 
-export default async function ProcessesPage() {
-  const processes = await getProcesses();
+interface ProcessesPageProps {
+  searchParams: Promise<{ cursor?: string; q?: string }>;
+}
+
+export default async function ProcessesPage({
+  searchParams,
+}: ProcessesPageProps) {
+  const params = await searchParams;
+  const page = await getProcesses({ cursor: params.cursor, search: params.q });
 
   return (
     <div className="space-y-8">
@@ -25,7 +33,13 @@ export default async function ProcessesPage() {
         </Button>
       </div>
 
-      <ProcessTable processes={processes} />
+      <ProcessTable processes={page.items} search={params.q} />
+      <Pagination
+        basePath="/processes"
+        nextCursor={page.nextCursor}
+        currentCursor={params.cursor}
+        filters={{ q: params.q }}
+      />
     </div>
   );
 }

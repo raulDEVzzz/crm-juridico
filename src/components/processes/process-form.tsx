@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
 import { Loader2 } from "lucide-react";
-import type { Client, Process } from "@prisma/client";
+import type { Process } from "@prisma/client";
 
 import {
   createProcess,
@@ -26,9 +26,17 @@ const initialState: ActionState = {
   message: "",
 };
 
+interface ClientOption {
+  id: string;
+  name: string;
+}
+
 interface ProcessFormProps {
-  clients: Client[];
-  process?: Omit<Process, "value"> & { value: number | null; client: Client };
+  clients: ClientOption[];
+  process?: Omit<Process, "value"> & {
+    value: number | null;
+    client: ClientOption;
+  };
   mode: "create" | "edit";
 }
 

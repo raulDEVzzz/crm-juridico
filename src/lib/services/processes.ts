@@ -1,13 +1,86 @@
-import type {
-  LegalArea,
-  PrismaClient,
-  ProcessStatus,
+import {
+  Prisma,
+  type Client,
+  type LegalArea,
+  type PrismaClient,
+  type Process,
+  type ProcessStatus,
 } from "@prisma/client";
 
+import { formatCnj } from "@/lib/validations/process";
 import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import { countPendingDeadlinesForProcess } from "@/lib/services/deadlines";
+import {
+  buildPage,
+  normalizePagination,
+  type Page,
+  type PaginationParams,
+} from "@/lib/services/pagination";
 
 type EnqueueStorageDeletion = typeof enqueueStorageDeletion;
+
+export interface ListProcessesParams extends PaginationParams {
+  search?: string;
+}
+
+export interface ProcessOption {
+  id: string;
+  processNumber: string;
+  client: { name: string };
+}
+
+export type ProcessWithClient = Process & { client: Client };
+
+/** Lista paginada de processos com busca executada no banco. */
+export async function listProcessesForUser(
+  db: PrismaClient,
+  userId: string,
+  params: ListProcessesParams = {}
+): Promise<Page<ProcessWithClient>> {
+  const { take, cursor } = normalizePagination(params);
+  const term = params.search?.trim();
+  const digits = term?.replace(/\D/g, "") ?? "";
+  const formattedSearchCnj = digits ? formatCnj(digits) : undefined;
+
+  const where: Prisma.ProcessWhereInput = { client: { userId } };
+
+  if (term) {
+    where.OR = [
+      ...(formattedSearchCnj
+        ? [{ processNumber: { contains: formattedSearchCnj, mode: "insensitive" as const } }]
+        : []),
+      { processNumber: { contains: term, mode: "insensitive" } },
+      { client: { name: { contains: term, mode: "insensitive" } } },
+      { court: { contains: term, mode: "insensitive" } },
+    ];
+  }
+
+  const processes = await db.process.findMany({
+    where,
+    include: { client: true },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    take: take + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+
+  return buildPage(processes, take);
+}
+
+/** Opções leves para selects de formulários. */
+export async function listProcessOptionsForUser(
+  db: PrismaClient,
+  userId: string
+): Promise<ProcessOption[]> {
+  return db.process.findMany({
+    where: { client: { userId } },
+    select: {
+      id: true,
+      processNumber: true,
+      client: { select: { name: true } },
+    },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+  });
+}
 
 export interface ProcessUpdateInput {
   clientId: string;

@@ -11,12 +11,14 @@ import { prisma } from "@/lib/prisma";
 import {
   deleteProcessForUser,
   getProcessByIdForUser,
+  listProcessOptionsForUser,
+  listProcessesForUser,
   updateProcessForUser,
+  type ListProcessesParams,
 } from "@/lib/services/processes";
 import { serializeProcess } from "@/lib/serializers/process";
 import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
 import {
-  formatCnj,
   processFormSchema,
   timelineFormSchema,
 } from "@/lib/validations/process";
@@ -49,53 +51,20 @@ async function getProcessWithDetails(processId: string, userId: string) {
   return process ? serializeProcess(process) : null;
 }
 
-export async function getProcesses(search?: string) {
+export async function getProcesses(params: ListProcessesParams = {}) {
   const userId = await getCurrentUserId();
-  const term = search?.trim();
+  const page = await listProcessesForUser(prisma, userId, params);
 
-  let formattedSearchCnj: string | undefined;
-  if (term) {
-    const rawDigits = term.replace(/\D/g, "");
-    if (rawDigits.length > 0) {
-      formattedSearchCnj = formatCnj(rawDigits);
-    }
-  }
+  return {
+    ...page,
+    items: page.items.map(serializeProcess),
+  };
+}
 
-  const processes = await prisma.process.findMany({
-    where: {
-      client: { userId },
-      ...(term
-        ? {
-            OR: [
-              ...(formattedSearchCnj
-                ? [
-                    {
-                      processNumber: {
-                        contains: formattedSearchCnj,
-                        mode: "insensitive" as const,
-                      },
-                    },
-                  ]
-                : []),
-              {
-                processNumber: {
-                  contains: term,
-                  mode: "insensitive" as const,
-                },
-              },
-              {
-                client: {
-                  name: { contains: term, mode: "insensitive" as const },
-                },
-              },
-            ],
-          }
-        : {}),
-    },
-    include: { client: true },
-    orderBy: { updatedAt: "desc" },
-  });
-  return processes.map(serializeProcess);
+/** Opções leves para selects de formulários. */
+export async function getProcessOptions() {
+  const userId = await getCurrentUserId();
+  return listProcessOptionsForUser(prisma, userId);
 }
 
 export async function getProcessById(id: string) {
