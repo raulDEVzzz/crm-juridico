@@ -149,10 +149,18 @@ function TimelineEntry({
 }) {
   const [isPending, startTransition] = useTransition();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleConfirmDelete() {
     startTransition(async () => {
-      await deleteTimelineEntry(processId, entry.id);
+      const result = await deleteTimelineEntry(processId, entry.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setShowDeleteDialog(false);
     });
   }
@@ -179,7 +187,10 @@ function TimelineEntry({
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 disabled={isPending}
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={() => {
+                  setDeleteError(null);
+                  setShowDeleteDialog(true);
+                }}
                 title="Remover andamento"
               >
                 <Trash2 className="h-4 w-4" />
@@ -196,10 +207,14 @@ function TimelineEntry({
 
       <ConfirmDeleteDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteError(null);
+        }}
         title="Remover Andamento"
         description={`Deseja realmente remover o andamento "${entry.title}"? Esta ação não poderá ser desfeita.`}
         isPending={isPending}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </>

@@ -20,6 +20,7 @@ interface ConfirmDeleteDialogProps {
   description: string;
   confirmLabel?: string;
   isPending?: boolean;
+  error?: string | null;
   onConfirm: () => void;
 }
 
@@ -30,10 +31,16 @@ export function ConfirmDeleteDialog({
   description,
   confirmLabel = "Excluir definitivamente",
   isPending = false,
+  error = null,
   onConfirm,
 }: ConfirmDeleteDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!isPending) onOpenChange(nextOpen);
+      }}
+    >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
@@ -44,6 +51,14 @@ export function ConfirmDeleteDialog({
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive"
+          >
+            {error}
+          </p>
+        ) : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
           <AlertDialogAction

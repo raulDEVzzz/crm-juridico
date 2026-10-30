@@ -1,49 +1,51 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { PersonType, Prisma } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateUTC } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
-import { drainStorageDeletionJobs, enqueueStorageDeletion } from "@/lib/storage/cleanup";
+import {
+  deleteClientForUser,
+  getClientByIdForUser,
+  getClientsWithBirthdayWindowForUser,
+  listClientOptionsForUser,
+  listClientsForUser,
+  type ListClientsParams,
+} from "@/lib/services/clients";
+import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
 import { clientFormSchema } from "@/lib/validations/client";
 import type { ActionState } from "@/types/actions";
 
 export type { ActionState };
 
-export async function getClients() {
+export async function getClients(params: ListClientsParams = {}) {
   const userId = await getCurrentUserId();
-
-  return prisma.client.findMany({
-    where: { userId },
-    orderBy: { name: "asc" },
-  });
+  return listClientsForUser(prisma, userId, params);
 }
 
-/** Minimal dataset used by the dashboard's birthday widgets. */
-export async function getClientsWithBirthDate() {
+/** Opções leves para selects de formulários. */
+export async function getClientOptions() {
   const userId = await getCurrentUserId();
+  return listClientOptionsForUser(prisma, userId);
+}
 
-  return prisma.client.findMany({
-    where: { userId, birthDate: { not: null } },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      whatsapp: true,
-      birthDate: true,
-    },
-  });
+/**
+ * Aniversariantes já filtrados no banco pela janela de dias.
+ * Usado pelo dashboard para não carregar todos os clientes.
+ */
+export async function getClientsWithBirthDate(daysAhead = 7) {
+  const userId = await getCurrentUserId();
+  return getClientsWithBirthdayWindowForUser(prisma, userId, daysAhead);
 }
 
 export async function getClientById(id: string) {
   const userId = await getCurrentUserId();
 
-  return prisma.client.findFirst({
-    where: { id, userId },
-  });
+  return getClientByIdForUser(prisma, userId, id);
 }
 
 export async function createClient(
@@ -185,37 +187,34 @@ export async function updateClient(
 export async function deleteClient(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
 
-  const existing = await prisma.client.findFirst({
-    where: { id, userId },
-  });
-
-  if (!existing) {
-    return { success: false, message: "Cliente não encontrado." };
-  }
-
-  const documents = await prisma.document.findMany({
-    where: {
-      userId,
-      OR: [{ clientId: id }, { process: { clientId: id } }],
-    },
-    select: { fileUrl: true },
-  });
+  let result: Awaited<ReturnType<typeof deleteClientForUser>>;
 
   try {
-    await prisma.$transaction([
-      prisma.document.deleteMany({
-        where: { userId, OR: [{ clientId: id }, { process: { clientId: id } }] },
-      }),
-      prisma.client.delete({ where: { id } }),
-    ]);
-    await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
+    result = await deleteClientForUser(prisma, userId, id);
   } catch (error) {
     console.error("Erro ao excluir cliente e documentos no banco:", error);
     return { success: false, message: "Não foi possível excluir o cliente." };
   }
 
-  // Não bloqueia a resposta de sucesso caso a fila de storage falhe momentaneamente
-  drainStorageDeletionJobs().catch(console.error);
+  if (result.status === "not_found") {
+    return { success: false, message: "Cliente não encontrado." };
+  }
+
+  if (result.status === "blocked") {
+    const deadlineLabel =
+      result.pendingDeadlines === 1 ? "prazo pendente" : "prazos pendentes";
+
+    return {
+      success: false,
+      message: `Não é possível excluir o cliente: há ${result.pendingDeadlines} ${deadlineLabel} nos processos vinculados. Conclua ou exclua esses prazos antes de continuar.`,
+    };
+  }
+
+  // Só drena depois que a transação commitou. Uma falha aqui não desfaz a
+  // exclusão: o job permanece na fila para o cron.
+  after(async () => {
+    await drainStorageDeletionJobs().catch(console.error);
+  });
 
   revalidatePath("/dashboard");
   revalidatePath("/clients");

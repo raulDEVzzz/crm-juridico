@@ -29,7 +29,6 @@ export function buildStorageKey(
   processId: string,
   fileName: string
 ): string {
-  const timestamp = Date.now();
   const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
-  return `uploads/${userId}/${processId}/${timestamp}-${safeName}`;
+  return `uploads/${userId}/${processId}/${crypto.randomUUID()}-${safeName}`;
 }

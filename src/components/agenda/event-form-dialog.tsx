@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import type { Process } from "@prisma/client";
 
 import { createEvent, type ActionState } from "@/actions/agenda";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,11 @@ const initialState: ActionState = {
   message: "",
 };
 
-type ProcessOption = Omit<Process, "value"> & { value: number | null; client: { name: string } };
+interface ProcessOption {
+  id: string;
+  processNumber: string;
+  client: { name: string };
+}
 
 interface EventFormDialogProps {
   processes: ProcessOption[];

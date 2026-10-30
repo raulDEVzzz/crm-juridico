@@ -1,19 +1,27 @@
 import { Plus } from "lucide-react";
 
 import { getEvents } from "@/actions/agenda";
-import { getProcesses } from "@/actions/processes";
+import { getProcessOptions } from "@/actions/processes";
 import { EventFormDialog } from "@/components/agenda/event-form-dialog";
 import { EventList } from "@/components/agenda/event-list";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
 
-export default async function AgendaPage() {
-  const [events, processes] = await Promise.all([
-    getEvents(),
-    getProcesses(),
+interface AgendaPageProps {
+  searchParams: Promise<{ cursor?: string }>;
+}
+
+export default async function AgendaPage({ searchParams }: AgendaPageProps) {
+  const params = await searchParams;
+  const [eventsPage, processes] = await Promise.all([
+    getEvents({ cursor: params.cursor }),
+    getProcessOptions(),
   ]);
 
-  const pending = events.filter((e) => e.status === "PENDENTE");
-  const completed = events.filter((e) => e.status === "CONCLUIDO");
+  const pending = eventsPage.items.filter((event) => event.status === "PENDENTE");
+  const completed = eventsPage.items.filter(
+    (event) => event.status === "CONCLUIDO"
+  );
 
   return (
     <div className="space-y-8">
@@ -36,20 +44,24 @@ export default async function AgendaPage() {
       </div>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">
-          Pendentes ({pending.length})
-        </h2>
+        <h2 className="text-lg font-semibold">Pendentes</h2>
         <EventList events={pending} />
       </section>
 
       {completed.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-muted-foreground">
-            Concluídos ({completed.length})
+            Concluídos
           </h2>
           <EventList events={completed} />
         </section>
       )}
+
+      <Pagination
+        basePath="/agenda"
+        nextCursor={eventsPage.nextCursor}
+        currentCursor={params.cursor}
+      />
     </div>
   );
 }

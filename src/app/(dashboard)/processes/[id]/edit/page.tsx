@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { getClients } from "@/actions/clients";
+import { getClientOptions } from "@/actions/clients";
 import { getProcessById } from "@/actions/processes";
 import { ProcessForm } from "@/components/processes/process-form";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export default async function EditProcessPage({ params }: EditProcessPageProps) 
   const { id } = await params;
   const [process, clients] = await Promise.all([
     getProcessById(id),
-    getClients(),
+    getClientOptions(),
   ]);
 
   if (!process) {

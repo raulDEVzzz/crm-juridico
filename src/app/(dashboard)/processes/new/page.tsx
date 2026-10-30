@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-import { getClients } from "@/actions/clients";
+import { getClientOptions } from "@/actions/clients";
 import { ProcessForm } from "@/components/processes/process-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 
 export default async function NewProcessPage() {
-  const clients = await getClients();
+  const clients = await getClientOptions();
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

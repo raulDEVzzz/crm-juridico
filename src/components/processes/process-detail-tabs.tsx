@@ -49,10 +49,18 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleConfirmDelete() {
     startTransition(async () => {
-      await deleteProcess(process.id);
+      const result = await deleteProcess(process.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setShowDeleteDialog(false);
       router.push("/processes");
     });
@@ -86,7 +94,10 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
             variant="destructive"
             size="sm"
             disabled={isPending}
-            onClick={() => setShowDeleteDialog(true)}
+            onClick={() => {
+              setDeleteError(null);
+              setShowDeleteDialog(true);
+            }}
           >
             <Trash2 className="h-4 w-4" />
             Excluir
@@ -161,10 +172,14 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
 
       <ConfirmDeleteDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteError(null);
+        }}
         title="Excluir Processo Judicial"
         description={`Deseja realmente excluir o processo nº ${process.processNumber}? Todos os andamentos e documentos vinculados serão excluídos permanentemente.`}
         isPending={isPending}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </div>

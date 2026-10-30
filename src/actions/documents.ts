@@ -1,14 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { buildStorageKey, getStorage } from "@/lib/storage";
 import {
-  drainStorageDeletionJobs,
-  enqueueStorageDeletion,
-} from "@/lib/storage/cleanup";
+  deleteDocumentForUser,
+  getDocumentForUser,
+  uploadDocumentForUser,
+} from "@/lib/services/documents";
+import { getStorage } from "@/lib/storage";
+import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
 import {
   documentUploadSchema,
   sanitizeFileName,
@@ -80,44 +83,38 @@ export async function uploadDocument(
   }
 
   const safeFileName = sanitizeFileName(file.name);
-  const storageKey = buildStorageKey(userId, processId, safeFileName);
-
-  let storage: ReturnType<typeof getStorage> | undefined;
-  let uploaded = false;
 
   try {
-    storage = getStorage();
+    const storage = getStorage();
 
-    await storage.upload({
-      key: storageKey,
-      body: buffer,
-      contentType: contentValidation.contentType!,
-      contentLength: file.size,
-    });
-    uploaded = true;
-
-    await prisma.document.create({
-      data: {
+    // O service relê e trava o processo/cliente na transação, fechando a
+    // corrida com exclusão ou reatribuição do processo. Se o vínculo sumiu,
+    // ele mesmo remove o arquivo recém-enviado.
+    const result = await uploadDocumentForUser(
+      prisma,
+      storage,
+      {
         userId,
         processId,
-        clientId: process.clientId,
         fileName: safeFileName,
-        fileUrl: storageKey,
         category: metadata.data.category || null,
+        body: buffer,
+        contentType: contentValidation.contentType!,
       },
-    });
+      {
+        onCleanupFailure: () => {
+          after(async () => {
+            await drainStorageDeletionJobs().catch(() => undefined);
+          });
+        },
+      }
+    );
+
+    if (result.status !== "created") {
+      return { success: false, message: "Processo não encontrado." };
+    }
   } catch (error) {
     console.error("Erro no upload:", error);
-
-    if (uploaded && storage) {
-      try {
-        await storage.delete(storageKey);
-      } catch (cleanupError) {
-        console.error("Erro ao desfazer upload sem registro; enfileirando limpeza:", cleanupError);
-        await enqueueStorageDeletion([storageKey]).catch(() => undefined);
-        await drainStorageDeletionJobs().catch(() => undefined);
-      }
-    }
 
     return {
       success: false,
@@ -135,40 +132,36 @@ export async function deleteDocument(
   documentId: string
 ): Promise<ActionState> {
   const userId = await getCurrentUserId();
-  const process = await verifyProcessOwnership(processId, userId);
 
-  if (!process) {
-    return { success: false, message: "Processo não encontrado." };
-  }
+  let result: Awaited<ReturnType<typeof deleteDocumentForUser>>;
 
-  const document = await prisma.document.findFirst({
-    where: { id: documentId, processId, userId },
-  });
-
-  if (!document) {
-    return { success: false, message: "Documento não encontrado." };
-  }
-
-  // 1. Remove primeiro do banco de dados para manter consistência
   try {
-    await prisma.document.delete({ where: { id: documentId } });
+    result = await deleteDocumentForUser(
+      prisma,
+      userId,
+      processId,
+      documentId
+    );
   } catch (error) {
-    console.error("Erro ao remover registro do documento:", error);
+    console.error("Erro ao remover documento e enfileirar storage:", error);
     return {
       success: false,
       message: "Não foi possível remover o documento. Tente novamente.",
     };
   }
 
-  // 2. Remove do storage sem carregar buffer em memória
-  try {
-    const storage = getStorage();
-    await storage.delete(document.fileUrl);
-  } catch (error) {
-    console.error("Erro ao deletar arquivo do storage; enfileirando para retry:", error);
-    await enqueueStorageDeletion([document.fileUrl]).catch(() => undefined);
-    await drainStorageDeletionJobs().catch(() => undefined);
+  if (result.status === "process_not_found") {
+    return { success: false, message: "Processo não encontrado." };
   }
+
+  if (result.status === "document_not_found") {
+    return { success: false, message: "Documento não encontrado." };
+  }
+
+  // O arquivo só é apagado depois do commit. Falhas ficam no outbox.
+  after(async () => {
+    await drainStorageDeletionJobs().catch(console.error);
+  });
 
   revalidatePath(`/processes/${processId}`);
 
@@ -180,9 +173,7 @@ export async function getDocumentDownloadUrl(
 ): Promise<{ url: string } | { error: string }> {
   const userId = await getCurrentUserId();
 
-  const document = await prisma.document.findFirst({
-    where: { id: documentId, userId },
-  });
+  const document = await getDocumentForUser(prisma, userId, documentId);
 
   if (!document) {
     return { error: "Documento não encontrado." };

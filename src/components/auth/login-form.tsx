@@ -53,7 +53,6 @@ export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
               id="username"
               name="username"
               type="text"
-              placeholder="erickdocarmo"
               autoComplete="username"
               required
             />

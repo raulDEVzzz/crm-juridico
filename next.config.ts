@@ -47,6 +47,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   outputFileTracingRoot: projectRoot,
   images: {
+    dangerouslyAllowSVG: false,
+    remotePatterns: [],
     qualities: [75, 95],
   },
   experimental: {

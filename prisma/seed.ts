@@ -87,12 +87,12 @@ async function main() {
     where: {
       clientId_processNumber: {
         clientId: clients[0].id,
-        processNumber: "0001234-56.2024.8.26.0100",
+        processNumber: "0001234-71.2024.8.26.0100",
       },
     },
     update: {},
     create: {
-      processNumber: "0001234-56.2024.8.26.0100",
+      processNumber: "0001234-71.2024.8.26.0100",
       court: "1ª Vara Cível de São Paulo",
       area: "CIVEL",
       status: "ATIVO",

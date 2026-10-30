@@ -5,8 +5,16 @@ import { redirect } from "next/navigation";
 import type { EventStatus, EventType } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
-import { getBrasiliaDateParts } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
+import {
+  deleteEventForUser,
+  getEventByIdForUser,
+  getUpcomingEventsForUser,
+  getUrgentDeadlinesForUser,
+  listEventsForUser,
+  updateEventStatusForUser,
+  type ListEventsParams,
+} from "@/lib/services/events";
 import { serializeProcess } from "@/lib/serializers/process";
 import {
   eventFormSchema,
@@ -17,70 +25,37 @@ import type { ActionState } from "@/types/actions";
 
 export type { ActionState };
 
-export async function getEvents() {
+export async function getEvents(params: ListEventsParams = {}) {
   const userId = await getCurrentUserId();
+  const page = await listEventsForUser(prisma, userId, params);
 
-  const events = await prisma.event.findMany({
-    where: { userId },
-    include: {
-      process: {
-        include: { client: true },
-      },
-    },
-    orderBy: { eventDate: "asc" },
-  });
-  return events.map((event) => ({ ...event, process: event.process ? serializeProcess(event.process) : null }));
+  return {
+    ...page,
+    items: page.items.map((event) => ({
+      ...event,
+      process: event.process ? serializeProcess(event.process) : null,
+    })),
+  };
 }
 
-export async function getUpcomingEvents() {
+/** Próximos compromissos pendentes (o dashboard pede apenas 3). */
+export async function getUpcomingEvents(limit = 3) {
   const userId = await getCurrentUserId();
-  const now = new Date();
+  const events = await getUpcomingEventsForUser(prisma, userId, limit);
 
-  const events = await prisma.event.findMany({
-    where: {
-      userId,
-      eventDate: { gte: now },
-      status: "PENDENTE",
-    },
-    include: {
-      process: {
-        include: { client: true },
-      },
-    },
-    orderBy: { eventDate: "asc" },
-  });
-  return events.map((event) => ({ ...event, process: event.process ? serializeProcess(event.process) : null }));
+  return events.map((event) => ({
+    ...event,
+    process: event.process ? serializeProcess(event.process) : null,
+  }));
 }
 
 /**
- * Retorna os prazos processuais urgentes:
- * 1. Prazos vencidos / atrasados (eventDate < agora) com status PENDENTE
- * 2. Prazos que vencem hoje
- * 3. Prazos que vencem nas próximas 48 horas (fuso horário de Brasília)
+ * Prazos urgentes: vencidos nos últimos 90 dias ou a vencer em até 48h.
+ * Limitado a 100 registros para não carregar histórico inteiro.
  */
 export async function getUrgentDeadlines() {
   const userId = await getCurrentUserId();
-  const { year, month, day } = getBrasiliaDateParts();
-
-  // Limite das próximas 48h: fim do segundo dia posterior (às 23:59:59 em Brasília / UTC-3)
-  const endOfIn2Days = new Date(Date.UTC(year, month, day + 2, 23 + 3, 59, 59, 999));
-
-  const events = await prisma.event.findMany({
-    where: {
-      userId,
-      type: "PRAZO",
-      status: "PENDENTE",
-      eventDate: {
-        lte: endOfIn2Days,
-      },
-    },
-    include: {
-      process: {
-        include: { client: true },
-      },
-    },
-    orderBy: { eventDate: "asc" },
-  });
+  const events = await getUrgentDeadlinesForUser(prisma, userId);
 
   return events.map((event) => ({
     ...event,
@@ -91,14 +66,7 @@ export async function getUrgentDeadlines() {
 export async function getEventById(id: string) {
   const userId = await getCurrentUserId();
 
-  const event = await prisma.event.findFirst({
-    where: { id, userId },
-    include: {
-      process: {
-        include: { client: true },
-      },
-    },
-  });
+  const event = await getEventByIdForUser(prisma, userId, id);
   return event ? { ...event, process: event.process ? serializeProcess(event.process) : null } : null;
 }
 
@@ -197,22 +165,17 @@ export async function updateEventStatus(
   const validStatus = parsedStatus.data;
   const userId = await getCurrentUserId();
 
-  const event = await prisma.event.findFirst({
-    where: { id, userId },
-  });
-
-  if (!event) {
-    return { success: false, message: "Compromisso não encontrado." };
-  }
+  let updated = false;
 
   try {
-    await prisma.event.update({
-      where: { id },
-      data: { status: validStatus },
-    });
+    updated = await updateEventStatusForUser(prisma, userId, id, validStatus);
   } catch (error) {
     console.error("Erro ao atualizar status:", error);
     return { success: false, message: "Erro ao atualizar status do compromisso." };
+  }
+
+  if (!updated) {
+    return { success: false, message: "Compromisso não encontrado." };
   }
 
   revalidatePath("/agenda");
@@ -230,19 +193,17 @@ export async function updateEventStatus(
 export async function deleteEvent(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
 
-  const event = await prisma.event.findFirst({
-    where: { id, userId },
-  });
-
-  if (!event) {
-    return { success: false, message: "Compromisso não encontrado." };
-  }
+  let deleted = false;
 
   try {
-    await prisma.event.delete({ where: { id } });
+    deleted = await deleteEventForUser(prisma, userId, id);
   } catch (error) {
     console.error("Erro ao excluir compromisso:", error);
     return { success: false, message: "Erro ao excluir o compromisso." };
+  }
+
+  if (!deleted) {
+    return { success: false, message: "Compromisso não encontrado." };
   }
 
   revalidatePath("/agenda");

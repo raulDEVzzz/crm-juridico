@@ -3,8 +3,6 @@
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
-import { headers } from "next/headers";
-
 import { signIn, signOut } from "@/auth";
 import { loginSchema } from "@/lib/validations/auth";
 
@@ -53,18 +51,11 @@ export async function loginAction(
   }
 
   const callbackUrl = getSafeCallbackUrl(formData.get("callbackUrl"));
-  const headerList = await headers();
-  const clientIp =
-    headerList.get("cf-connecting-ip")?.trim() ||
-    headerList.get("x-real-ip")?.trim() ||
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "127.0.0.1";
 
   try {
     await signIn("credentials", {
       username: parsed.data.username,
       password: parsed.data.password,
-      clientIp,
       redirectTo: callbackUrl,
     });
   } catch (error) {

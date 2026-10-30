@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Eye, Gavel, Search, Trash2 } from "lucide-react";
 import type { Client, Process } from "@prisma/client";
 
@@ -27,6 +27,8 @@ type ProcessWithClient = Omit<Process, "value"> & { value: number | null; client
 
 interface ProcessTableProps {
   processes: ProcessWithClient[];
+  /** Termo aplicado no servidor; usado apenas para o estado vazio. */
+  search?: string;
 }
 
 const statusVariant: Record<
@@ -38,46 +40,46 @@ const statusVariant: Record<
   SUSPENSO: "warning",
 };
 
-export function ProcessTable({ processes }: ProcessTableProps) {
-  const [search, setSearch] = useState("");
+export function ProcessTable({ processes, search = "" }: ProcessTableProps) {
   const [isPending, startTransition] = useTransition();
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return processes;
-
-    return processes.filter(
-      (process) =>
-        process.processNumber.toLowerCase().includes(term) ||
-        process.client.name.toLowerCase().includes(term) ||
-        process.court.toLowerCase().includes(term)
-    );
-  }, [processes, search]);
-
   const [processToDelete, setProcessToDelete] = useState<{ id: string; processNumber: string } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleConfirmDelete() {
     if (!processToDelete) return;
 
     startTransition(async () => {
-      await deleteProcess(processToDelete.id);
+      const result = await deleteProcess(processToDelete.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setProcessToDelete(null);
     });
   }
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por número CNJ ou nome do cliente..."
-          className="pl-9"
-        />
-      </div>
+      {/* A busca é enviada ao servidor; o cursor é descartado ao filtrar. */}
+      <form action="/processes" method="get" className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            name="q"
+            defaultValue={search}
+            placeholder="Buscar por número CNJ, cliente ou vara..."
+            className="pl-9"
+          />
+        </div>
+        <Button type="submit" variant="outline">
+          Buscar
+        </Button>
+      </form>
 
-      {filtered.length === 0 ? (
+      {processes.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
@@ -102,7 +104,7 @@ export function ProcessTable({ processes }: ProcessTableProps) {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {filtered.map((process) => (
+          {processes.map((process) => (
             <Card key={process.id}>
               <CardHeader className="pb-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -133,12 +135,13 @@ export function ProcessTable({ processes }: ProcessTableProps) {
                       variant="destructive"
                       size="sm"
                       disabled={isPending}
-                      onClick={() =>
+                      onClick={() => {
+                        setDeleteError(null);
                         setProcessToDelete({
                           id: process.id,
                           processNumber: process.processNumber,
-                        })
-                      }
+                        });
+                      }}
                     >
                       <Trash2 className="h-4 w-4" />
                       Excluir
@@ -178,10 +181,16 @@ export function ProcessTable({ processes }: ProcessTableProps) {
 
       <ConfirmDeleteDialog
         open={!!processToDelete}
-        onOpenChange={(open) => !open && setProcessToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setProcessToDelete(null);
+            setDeleteError(null);
+          }
+        }}
         title="Excluir Processo Judicial"
         description={`Deseja realmente excluir o processo nº ${processToDelete?.processNumber}? Todos os andamentos e documentos vinculados serão excluídos permanentemente.`}
         isPending={isPending}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </div>

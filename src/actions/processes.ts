@@ -1,16 +1,24 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { Prisma, type LegalArea, type ProcessStatus } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
-import { serializeProcess } from "@/lib/serializers/process";
-import { drainStorageDeletionJobs, enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import {
-  formatCnj,
+  deleteProcessForUser,
+  getProcessByIdForUser,
+  listProcessOptionsForUser,
+  listProcessesForUser,
+  updateProcessForUser,
+  type ListProcessesParams,
+} from "@/lib/services/processes";
+import { serializeProcess } from "@/lib/serializers/process";
+import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
+import {
   processFormSchema,
   timelineFormSchema,
 } from "@/lib/validations/process";
@@ -39,67 +47,24 @@ async function verifyProcessOwner(processId: string, userId: string) {
  * Busca completa de processo com timeline e documentos associados.
  */
 async function getProcessWithDetails(processId: string, userId: string) {
-  const process = await prisma.process.findFirst({
-    where: {
-      id: processId,
-      client: { userId },
-    },
-    include: {
-      client: true,
-      timeline: { orderBy: { date: "desc" } },
-      documents: { orderBy: { uploadedAt: "desc" } },
-    },
-  });
+  const process = await getProcessByIdForUser(prisma, userId, processId);
   return process ? serializeProcess(process) : null;
 }
 
-export async function getProcesses(search?: string) {
+export async function getProcesses(params: ListProcessesParams = {}) {
   const userId = await getCurrentUserId();
-  const term = search?.trim();
+  const page = await listProcessesForUser(prisma, userId, params);
 
-  let formattedSearchCnj: string | undefined;
-  if (term) {
-    const rawDigits = term.replace(/\D/g, "");
-    if (rawDigits.length > 0) {
-      formattedSearchCnj = formatCnj(rawDigits);
-    }
-  }
+  return {
+    ...page,
+    items: page.items.map(serializeProcess),
+  };
+}
 
-  const processes = await prisma.process.findMany({
-    where: {
-      client: { userId },
-      ...(term
-        ? {
-            OR: [
-              ...(formattedSearchCnj
-                ? [
-                    {
-                      processNumber: {
-                        contains: formattedSearchCnj,
-                        mode: "insensitive" as const,
-                      },
-                    },
-                  ]
-                : []),
-              {
-                processNumber: {
-                  contains: term,
-                  mode: "insensitive" as const,
-                },
-              },
-              {
-                client: {
-                  name: { contains: term, mode: "insensitive" as const },
-                },
-              },
-            ],
-          }
-        : {}),
-    },
-    include: { client: true },
-    orderBy: { updatedAt: "desc" },
-  });
-  return processes.map(serializeProcess);
+/** Opções leves para selects de formulários. */
+export async function getProcessOptions() {
+  const userId = await getCurrentUserId();
+  return listProcessOptionsForUser(prisma, userId);
 }
 
 export async function getProcessById(id: string) {
@@ -217,18 +182,17 @@ export async function updateProcess(
     return { success: false, message: "Cliente não encontrado." };
   }
 
+  let result: Awaited<ReturnType<typeof updateProcessForUser>>;
+
   try {
-    await prisma.process.update({
-      where: { id },
-      data: {
-        clientId: parsed.data.clientId,
-        processNumber: parsed.data.processNumber,
-        court: parsed.data.court,
-        area: parsed.data.area as LegalArea,
-        status: parsed.data.status as ProcessStatus,
-        value: parsed.data.value ?? null,
-        notes: parsed.data.notes || null,
-      },
+    result = await updateProcessForUser(prisma, userId, id, {
+      clientId: parsed.data.clientId,
+      processNumber: parsed.data.processNumber,
+      court: parsed.data.court,
+      area: parsed.data.area as LegalArea,
+      status: parsed.data.status as ProcessStatus,
+      value: parsed.data.value ?? null,
+      notes: parsed.data.notes || null,
     });
   } catch (error) {
     if (
@@ -247,6 +211,14 @@ export async function updateProcess(
     };
   }
 
+  if (result.status === "not_found") {
+    return { success: false, message: "Processo não encontrado." };
+  }
+
+  if (result.status === "client_not_found") {
+    return { success: false, message: "Cliente não encontrado." };
+  }
+
   revalidatePath("/processes");
   revalidatePath(`/processes/${id}`);
   redirect(`/processes/${id}`);
@@ -254,30 +226,34 @@ export async function updateProcess(
 
 export async function deleteProcess(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
-  const existing = await verifyProcessOwner(id, userId);
 
-  if (!existing) {
-    return { success: false, message: "Processo não encontrado." };
-  }
-
-  const documents = await prisma.document.findMany({
-    where: { processId: id, userId },
-    select: { fileUrl: true },
-  });
+  let result: Awaited<ReturnType<typeof deleteProcessForUser>>;
 
   try {
-    await prisma.$transaction([
-      prisma.document.deleteMany({ where: { processId: id, userId } }),
-      prisma.process.delete({ where: { id } }),
-    ]);
-    await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
+    result = await deleteProcessForUser(prisma, userId, id);
   } catch (error) {
     console.error("Erro ao excluir processo e documentos no banco:", error);
     return { success: false, message: "Não foi possível excluir o processo." };
   }
 
-  // Não bloqueia a resposta de sucesso
-  drainStorageDeletionJobs().catch(console.error);
+  if (result.status === "not_found") {
+    return { success: false, message: "Processo não encontrado." };
+  }
+
+  if (result.status === "blocked") {
+    const deadlineLabel =
+      result.pendingDeadlines === 1 ? "prazo pendente" : "prazos pendentes";
+
+    return {
+      success: false,
+      message: `Não é possível excluir o processo: há ${result.pendingDeadlines} ${deadlineLabel} vinculado(s). Conclua ou exclua esses prazos antes de continuar.`,
+    };
+  }
+
+  // Só drena depois do commit; falhas permanecem no outbox para o cron.
+  after(async () => {
+    await drainStorageDeletionJobs().catch(console.error);
+  });
 
   revalidatePath("/processes");
   revalidatePath("/agenda");

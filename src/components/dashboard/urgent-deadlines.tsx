@@ -87,6 +87,11 @@ export function UrgentDeadlines({ deadlines }: UrgentDeadlinesProps) {
   // Obter partes de data em Brasília para determinar o grau de urgência
   const now = new Date();
   const todayParts = getBrasiliaDateParts(now);
+  const todayUtcMidnight = Date.UTC(
+    todayParts.year,
+    todayParts.month,
+    todayParts.day
+  );
 
   const hasOverdue = deadlines.some((d) => new Date(d.eventDate) < now);
 
@@ -151,14 +156,17 @@ export function UrgentDeadlines({ deadlines }: UrgentDeadlinesProps) {
             const isOverdue = deadlineDate < now;
 
             const deadlineParts = getBrasiliaDateParts(deadlineDate);
-            const isToday =
-              deadlineParts.year === todayParts.year &&
-              deadlineParts.month === todayParts.month &&
-              deadlineParts.day === todayParts.day;
-            const isTomorrow =
-              deadlineParts.year === todayParts.year &&
-              deadlineParts.month === todayParts.month &&
-              deadlineParts.day === todayParts.day + 1;
+            const deadlineUtcMidnight = Date.UTC(
+              deadlineParts.year,
+              deadlineParts.month,
+              deadlineParts.day
+            );
+            const diffDays = Math.round(
+              (deadlineUtcMidnight - todayUtcMidnight) / (24 * 60 * 60 * 1000)
+            );
+
+            const isToday = diffDays === 0;
+            const isTomorrow = diffDays === 1;
 
             return (
               <div
