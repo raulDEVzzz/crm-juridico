@@ -8,8 +8,13 @@ import { Prisma, type LegalArea, type ProcessStatus } from "@prisma/client";
 import { getCurrentUserId } from "@/lib/auth";
 import { parseDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
+import {
+  deleteProcessForUser,
+  getProcessByIdForUser,
+  updateProcessForUser,
+} from "@/lib/services/processes";
 import { serializeProcess } from "@/lib/serializers/process";
-import { drainStorageDeletionJobs, enqueueStorageDeletion } from "@/lib/storage/cleanup";
+import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
 import {
   formatCnj,
   processFormSchema,
@@ -40,17 +45,7 @@ async function verifyProcessOwner(processId: string, userId: string) {
  * Busca completa de processo com timeline e documentos associados.
  */
 async function getProcessWithDetails(processId: string, userId: string) {
-  const process = await prisma.process.findFirst({
-    where: {
-      id: processId,
-      client: { userId },
-    },
-    include: {
-      client: true,
-      timeline: { orderBy: { date: "desc" } },
-      documents: { orderBy: { uploadedAt: "desc" } },
-    },
-  });
+  const process = await getProcessByIdForUser(prisma, userId, processId);
   return process ? serializeProcess(process) : null;
 }
 
@@ -218,18 +213,17 @@ export async function updateProcess(
     return { success: false, message: "Cliente não encontrado." };
   }
 
+  let result: Awaited<ReturnType<typeof updateProcessForUser>>;
+
   try {
-    await prisma.process.update({
-      where: { id },
-      data: {
-        clientId: parsed.data.clientId,
-        processNumber: parsed.data.processNumber,
-        court: parsed.data.court,
-        area: parsed.data.area as LegalArea,
-        status: parsed.data.status as ProcessStatus,
-        value: parsed.data.value ?? null,
-        notes: parsed.data.notes || null,
-      },
+    result = await updateProcessForUser(prisma, userId, id, {
+      clientId: parsed.data.clientId,
+      processNumber: parsed.data.processNumber,
+      court: parsed.data.court,
+      area: parsed.data.area as LegalArea,
+      status: parsed.data.status as ProcessStatus,
+      value: parsed.data.value ?? null,
+      notes: parsed.data.notes || null,
     });
   } catch (error) {
     if (
@@ -248,6 +242,14 @@ export async function updateProcess(
     };
   }
 
+  if (result.status === "not_found") {
+    return { success: false, message: "Processo não encontrado." };
+  }
+
+  if (result.status === "client_not_found") {
+    return { success: false, message: "Cliente não encontrado." };
+  }
+
   revalidatePath("/processes");
   revalidatePath(`/processes/${id}`);
   redirect(`/processes/${id}`);
@@ -255,29 +257,31 @@ export async function updateProcess(
 
 export async function deleteProcess(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
-  const existing = await verifyProcessOwner(id, userId);
 
-  if (!existing) {
-    return { success: false, message: "Processo não encontrado." };
-  }
-
-  const documents = await prisma.document.findMany({
-    where: { processId: id, userId },
-    select: { fileUrl: true },
-  });
+  let result: Awaited<ReturnType<typeof deleteProcessForUser>>;
 
   try {
-    await prisma.$transaction([
-      prisma.document.deleteMany({ where: { processId: id, userId } }),
-      prisma.process.delete({ where: { id } }),
-    ]);
-    await enqueueStorageDeletion(documents.map((document) => document.fileUrl));
+    result = await deleteProcessForUser(prisma, userId, id);
   } catch (error) {
     console.error("Erro ao excluir processo e documentos no banco:", error);
     return { success: false, message: "Não foi possível excluir o processo." };
   }
 
-  // Agenda a drenagem da fila em background com garantia de execução no runtime serverless
+  if (result.status === "not_found") {
+    return { success: false, message: "Processo não encontrado." };
+  }
+
+  if (result.status === "blocked") {
+    const deadlineLabel =
+      result.pendingDeadlines === 1 ? "prazo pendente" : "prazos pendentes";
+
+    return {
+      success: false,
+      message: `Não é possível excluir o processo: há ${result.pendingDeadlines} ${deadlineLabel} vinculado(s). Conclua ou exclua esses prazos antes de continuar.`,
+    };
+  }
+
+  // Só drena depois do commit; falhas permanecem no outbox para o cron.
   after(async () => {
     await drainStorageDeletionJobs().catch(console.error);
   });

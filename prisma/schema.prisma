@@ -158,7 +158,7 @@ model Event {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   processId String?  @map("process_id")
-  process   Process? @relation(fields: [processId], references: [id], onDelete: SetNull)
+  process   Process? @relation(fields: [processId], references: [id], onDelete: Cascade)
 
   @@index([userId, eventDate])
   @@index([processId])

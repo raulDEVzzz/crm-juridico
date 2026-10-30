@@ -7,6 +7,11 @@ import type { EventStatus, EventType } from "@prisma/client";
 import { getCurrentUserId } from "@/lib/auth";
 import { getBrasiliaDateParts } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
+import {
+  deleteEventForUser,
+  getEventByIdForUser,
+  updateEventStatusForUser,
+} from "@/lib/services/events";
 import { serializeProcess } from "@/lib/serializers/process";
 import {
   eventFormSchema,
@@ -91,14 +96,7 @@ export async function getUrgentDeadlines() {
 export async function getEventById(id: string) {
   const userId = await getCurrentUserId();
 
-  const event = await prisma.event.findFirst({
-    where: { id, userId },
-    include: {
-      process: {
-        include: { client: true },
-      },
-    },
-  });
+  const event = await getEventByIdForUser(prisma, userId, id);
   return event ? { ...event, process: event.process ? serializeProcess(event.process) : null } : null;
 }
 
@@ -197,22 +195,17 @@ export async function updateEventStatus(
   const validStatus = parsedStatus.data;
   const userId = await getCurrentUserId();
 
-  const event = await prisma.event.findFirst({
-    where: { id, userId },
-  });
-
-  if (!event) {
-    return { success: false, message: "Compromisso não encontrado." };
-  }
+  let updated = false;
 
   try {
-    await prisma.event.update({
-      where: { id },
-      data: { status: validStatus },
-    });
+    updated = await updateEventStatusForUser(prisma, userId, id, validStatus);
   } catch (error) {
     console.error("Erro ao atualizar status:", error);
     return { success: false, message: "Erro ao atualizar status do compromisso." };
+  }
+
+  if (!updated) {
+    return { success: false, message: "Compromisso não encontrado." };
   }
 
   revalidatePath("/agenda");
@@ -230,19 +223,17 @@ export async function updateEventStatus(
 export async function deleteEvent(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
 
-  const event = await prisma.event.findFirst({
-    where: { id, userId },
-  });
-
-  if (!event) {
-    return { success: false, message: "Compromisso não encontrado." };
-  }
+  let deleted = false;
 
   try {
-    await prisma.event.delete({ where: { id } });
+    deleted = await deleteEventForUser(prisma, userId, id);
   } catch (error) {
     console.error("Erro ao excluir compromisso:", error);
     return { success: false, message: "Erro ao excluir o compromisso." };
+  }
+
+  if (!deleted) {
+    return { success: false, message: "Compromisso não encontrado." };
   }
 
   revalidatePath("/agenda");

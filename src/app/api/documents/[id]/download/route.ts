@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getDocumentForUser } from "@/lib/services/documents";
 import { getStorage } from "@/lib/storage";
 
 interface RouteParams {
@@ -13,9 +14,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const userId = await getCurrentUserId();
     const { id } = await params;
 
-    const document = await prisma.document.findFirst({
-      where: { id, userId },
-    });
+    const document = await getDocumentForUser(prisma, userId, id);
 
     if (!document) {
       return NextResponse.json(
