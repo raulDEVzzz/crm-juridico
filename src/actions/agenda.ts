@@ -11,10 +11,11 @@ import {
   getEventByIdForUser,
   getUpcomingEventsForUser,
   getUrgentDeadlinesForUser,
-  listEventsForUser,
+  listAgendaSectionForUser,
   updateEventStatusForUser,
-  type ListEventsParams,
+  type EventWithProcess,
 } from "@/lib/services/events";
+import type { Page } from "@/lib/services/pagination";
 import { serializeProcess } from "@/lib/serializers/process";
 import {
   eventFormSchema,
@@ -25,16 +26,46 @@ import type { ActionState } from "@/types/actions";
 
 export type { ActionState };
 
-export async function getEvents(params: ListEventsParams = {}) {
-  const userId = await getCurrentUserId();
-  const page = await listEventsForUser(prisma, userId, params);
+export interface AgendaCursors {
+  atrasados?: string | null;
+  proximos?: string | null;
+  concluidos?: string | null;
+}
 
+function serializeEventPage(page: Page<EventWithProcess>) {
   return {
     ...page,
     items: page.items.map((event) => ({
       ...event,
       process: event.process ? serializeProcess(event.process) : null,
     })),
+  };
+}
+
+/** Busca as três seções da agenda com o mesmo instante de referência. */
+export async function getAgendaSections(cursors: AgendaCursors = {}) {
+  const userId = await getCurrentUserId();
+  const now = new Date();
+
+  const [atrasados, proximos, concluidos] = await Promise.all([
+    listAgendaSectionForUser(prisma, userId, "atrasados", {
+      cursor: cursors.atrasados,
+      now,
+    }),
+    listAgendaSectionForUser(prisma, userId, "proximos", {
+      cursor: cursors.proximos,
+      now,
+    }),
+    listAgendaSectionForUser(prisma, userId, "concluidos", {
+      cursor: cursors.concluidos,
+      now,
+    }),
+  ]);
+
+  return {
+    atrasados: serializeEventPage(atrasados),
+    proximos: serializeEventPage(proximos),
+    concluidos: serializeEventPage(concluidos),
   };
 }
 

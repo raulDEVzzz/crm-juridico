@@ -1,27 +1,31 @@
 import { Plus } from "lucide-react";
 
-import { getEvents } from "@/actions/agenda";
+import { getAgendaSections } from "@/actions/agenda";
 import { getProcessOptions } from "@/actions/processes";
 import { EventFormDialog } from "@/components/agenda/event-form-dialog";
 import { EventList } from "@/components/agenda/event-list";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
+import type { PaginationSearchParams } from "@/lib/pagination-url";
 
 interface AgendaPageProps {
-  searchParams: Promise<{ cursor?: string }>;
+  searchParams: Promise<PaginationSearchParams>;
+}
+
+function firstParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 export default async function AgendaPage({ searchParams }: AgendaPageProps) {
   const params = await searchParams;
-  const [eventsPage, processes] = await Promise.all([
-    getEvents({ cursor: params.cursor }),
+  const [sections, processes] = await Promise.all([
+    getAgendaSections({
+      atrasados: firstParam(params.cursorAtrasados),
+      proximos: firstParam(params.cursorProximos),
+      concluidos: firstParam(params.cursorConcluidos),
+    }),
     getProcessOptions(),
   ]);
-
-  const pending = eventsPage.items.filter((event) => event.status === "PENDENTE");
-  const completed = eventsPage.items.filter(
-    (event) => event.status === "CONCLUIDO"
-  );
 
   return (
     <div className="space-y-8">
@@ -44,24 +48,55 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
       </div>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Pendentes</h2>
-        <EventList events={pending} />
+        <h2 className="text-lg font-semibold">Atrasados</h2>
+        <EventList
+          events={sections.atrasados.items}
+          emptyTitle="Nenhum compromisso atrasado."
+          emptyDescription="Compromissos pendentes vencidos aparecerão aqui."
+          highlightOverdue
+        />
+        <Pagination
+          basePath="/agenda"
+          cursorParam="cursorAtrasados"
+          nextCursor={sections.atrasados.nextCursor}
+          currentCursor={firstParam(params.cursorAtrasados)}
+          filters={params}
+        />
       </section>
 
-      {completed.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-lg font-semibold text-muted-foreground">
-            Concluídos
-          </h2>
-          <EventList events={completed} />
-        </section>
-      )}
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Próximos</h2>
+        <EventList
+          events={sections.proximos.items}
+          emptyTitle="Nenhum compromisso futuro."
+          emptyDescription="Seus próximos compromissos aparecerão aqui."
+        />
+        <Pagination
+          basePath="/agenda"
+          cursorParam="cursorProximos"
+          nextCursor={sections.proximos.nextCursor}
+          currentCursor={firstParam(params.cursorProximos)}
+          filters={params}
+        />
+      </section>
 
-      <Pagination
-        basePath="/agenda"
-        nextCursor={eventsPage.nextCursor}
-        currentCursor={params.cursor}
-      />
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold text-muted-foreground">
+          Concluídos
+        </h2>
+        <EventList
+          events={sections.concluidos.items}
+          emptyTitle="Nenhum compromisso concluído."
+          emptyDescription="Compromissos concluídos aparecerão aqui."
+        />
+        <Pagination
+          basePath="/agenda"
+          cursorParam="cursorConcluidos"
+          nextCursor={sections.concluidos.nextCursor}
+          currentCursor={firstParam(params.cursorConcluidos)}
+          filters={params}
+        />
+      </section>
     </div>
   );
 }

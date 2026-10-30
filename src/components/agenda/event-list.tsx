@@ -27,6 +27,9 @@ type EventWithProcess = Event & {
 
 interface EventListProps {
   events: EventWithProcess[];
+  emptyTitle?: string;
+  emptyDescription?: string;
+  highlightOverdue?: boolean;
 }
 
 const typeVariant: Record<Event["type"], "default" | "warning" | "secondary"> = {
@@ -55,16 +58,19 @@ const formatEventDateTime = new Intl.DateTimeFormat("pt-BR", {
   hourCycle: "h23",
 });
 
-export function EventList({ events }: EventListProps) {
+export function EventList({
+  events,
+  emptyTitle = "Nenhum compromisso agendado",
+  emptyDescription = "Adicione audiências, prazos ou reuniões à sua agenda.",
+  highlightOverdue = false,
+}: EventListProps) {
   if (events.length === 0) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-2 py-16 text-center">
           <Calendar className="h-10 w-10 text-muted-foreground opacity-50" />
-          <p className="font-medium">Nenhum compromisso agendado</p>
-          <p className="text-sm text-muted-foreground">
-            Adicione audiências, prazos ou reuniões à sua agenda.
-          </p>
+          <p className="font-medium">{emptyTitle}</p>
+          <p className="text-sm text-muted-foreground">{emptyDescription}</p>
         </CardContent>
       </Card>
     );
@@ -73,19 +79,29 @@ export function EventList({ events }: EventListProps) {
   return (
     <div className="grid gap-4">
       {events.map((event) => (
-        <EventCard key={event.id} event={event} />
+        <EventCard
+          key={event.id}
+          event={event}
+          highlightOverdue={highlightOverdue}
+        />
       ))}
     </div>
   );
 }
 
-function EventCard({ event }: { event: EventWithProcess }) {
+function EventCard({
+  event,
+  highlightOverdue,
+}: {
+  event: EventWithProcess;
+  highlightOverdue: boolean;
+}) {
   const [isPending, startTransition] = useTransition();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const isPast = event.eventDate < new Date();
   const isDone = event.status === "CONCLUIDO";
+  const isOverdue = highlightOverdue && !isDone;
 
   function handleToggleStatus() {
     startTransition(async () => {
@@ -114,7 +130,7 @@ function EventCard({ event }: { event: EventWithProcess }) {
 
   return (
     <>
-      <Card className={isDone ? "opacity-60" : isPast ? "border-amber-300" : ""}>
+      <Card className={isDone ? "opacity-60" : isOverdue ? "border-amber-300" : ""}>
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-3">
@@ -137,6 +153,7 @@ function EventCard({ event }: { event: EventWithProcess }) {
                   <Badge variant={isDone ? "secondary" : "success"}>
                     {EVENT_STATUS_LABELS[event.status]}
                   </Badge>
+                  {isOverdue && <Badge variant="warning">Atrasado</Badge>}
                 </div>
                 <CardDescription className="mt-1 flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" />
