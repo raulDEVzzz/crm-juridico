@@ -9,6 +9,8 @@
     "lint": "next lint",
     "test:auth": "tsx --test tests/auth-credentials.test.ts",
     "test:auth:http": "node scripts/verify-auth-ip-bypass.mjs",
+    "test:integration": "node scripts/run-integration-tests.mjs",
+    "db:test:reset": "node scripts/reset-test-db.mjs",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
