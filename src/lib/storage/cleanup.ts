@@ -1,16 +1,41 @@
+import type { Prisma, PrismaClient } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { getStorage } from "@/lib/storage";
+import type { StorageAdapter } from "@/lib/storage/types";
 
-export async function enqueueStorageDeletion(keys: string[]) {
-  if (!keys.length) return;
-  await prisma.storageDeletionJob.createMany({
-    data: keys.map((key) => ({ key })),
-    skipDuplicates: true,
-  });
+type StorageDeletionDb = PrismaClient | Prisma.TransactionClient;
+
+/**
+ * Registra jobs de exclusão no outbox. Deve ser chamado com o cliente da
+ * mesma transação que apagou os registros no banco. O upsert reabre jobs já
+ * processados, garantindo que uma nova exclusão do mesmo key não seja ignorada.
+ */
+export async function enqueueStorageDeletion(
+  db: StorageDeletionDb,
+  keys: string[]
+) {
+  const uniqueKeys = [...new Set(keys)];
+
+  if (!uniqueKeys.length) return;
+
+  await Promise.all(
+    uniqueKeys.map((key) =>
+      db.storageDeletionJob.upsert({
+        where: { key },
+        create: { key },
+        update: { processedAt: null, attempts: 0, lastError: null },
+      })
+    )
+  );
 }
 
 export interface DrainStorageOptions {
   maxAttempts?: number;
+  /** Injetável nos testes para nunca tocar no storage real. */
+  storage?: StorageAdapter;
+  /** Injetável nos testes para apontar para o banco de teste. */
+  db?: PrismaClient;
 }
 
 /** Retries are durable: failures remain queued for a later request or worker. */
@@ -23,8 +48,9 @@ export async function drainStorageDeletionJobs(
   deadLetterCount: number;
 }> {
   const maxAttempts = options.maxAttempts ?? 5;
+  const db = options.db ?? prisma;
 
-  const jobs = await prisma.storageDeletionJob.findMany({
+  const jobs = await db.storageDeletionJob.findMany({
     where: {
       processedAt: null,
       attempts: { lt: maxAttempts },
@@ -35,7 +61,7 @@ export async function drainStorageDeletionJobs(
 
   if (!jobs.length) return { processed: 0, failed: 0, deadLetterCount: 0 };
 
-  const storage = getStorage();
+  const storage = options.storage ?? getStorage();
   let processed = 0;
   let failed = 0;
 
@@ -43,7 +69,7 @@ export async function drainStorageDeletionJobs(
     jobs.map(async (job) => {
       try {
         await storage.delete(job.key);
-        await prisma.storageDeletionJob.update({
+        await db.storageDeletionJob.update({
           where: { id: job.id },
           data: { processedAt: new Date(), lastError: null },
         });
@@ -63,7 +89,7 @@ export async function drainStorageDeletionJobs(
           );
         }
 
-        await prisma.storageDeletionJob.update({
+        await db.storageDeletionJob.update({
           where: { id: job.id },
           data: {
             attempts: { increment: 1 },
@@ -74,7 +100,7 @@ export async function drainStorageDeletionJobs(
     })
   );
 
-  const deadLetterCount = await prisma.storageDeletionJob.count({
+  const deadLetterCount = await db.storageDeletionJob.count({
     where: { processedAt: null, attempts: { gte: 5 } },
   });
 
