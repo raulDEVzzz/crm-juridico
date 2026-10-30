@@ -35,6 +35,18 @@ export interface ListAgendaSectionParams extends PaginationParams {
   now?: Date;
 }
 
+export interface AgendaCursors {
+  atrasados?: string | null;
+  proximos?: string | null;
+  concluidos?: string | null;
+}
+
+export interface AgendaSectionPages {
+  atrasados: Page<EventWithProcess>;
+  proximos: Page<EventWithProcess>;
+  concluidos: Page<EventWithProcess>;
+}
+
 /** Lista paginada de uma das três seções da agenda. */
 export async function listAgendaSectionForUser(
   db: PrismaClient,
@@ -89,6 +101,31 @@ export async function listAgendaSectionForUser(
   });
 
   return buildPage(events, take);
+}
+
+/** Busca as três seções com o mesmo instante de referência. */
+export async function getAgendaSectionsForUser(
+  db: PrismaClient,
+  userId: string,
+  cursors: AgendaCursors = {},
+  now = new Date()
+): Promise<AgendaSectionPages> {
+  const [atrasados, proximos, concluidos] = await Promise.all([
+    listAgendaSectionForUser(db, userId, "atrasados", {
+      cursor: cursors.atrasados,
+      now,
+    }),
+    listAgendaSectionForUser(db, userId, "proximos", {
+      cursor: cursors.proximos,
+      now,
+    }),
+    listAgendaSectionForUser(db, userId, "concluidos", {
+      cursor: cursors.concluidos,
+      now,
+    }),
+  ]);
+
+  return { atrasados, proximos, concluidos };
 }
 
 /** Lista paginada de compromissos, com filtro opcional de status. */

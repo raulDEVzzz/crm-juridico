@@ -4,6 +4,7 @@ import { after, beforeEach, test } from "node:test";
 import type { EventStatus } from "@prisma/client";
 
 import {
+  getAgendaSectionsForUser,
   listAgendaSectionForUser,
   type AgendaSection,
 } from "../../src/lib/services/events";
@@ -56,7 +57,10 @@ beforeEach(async () => {
 
   fixtures = [
     ...createFixtures(userId, "atrasados", "PENDENTE", (index) => -(index % 5) - 1),
-    ...createFixtures(userId, "proximos", "PENDENTE", (index) => (index % 5) + 1),
+    // O primeiro evento fica exatamente em NOW para fixar a fronteira >=.
+    ...createFixtures(userId, "proximos", "PENDENTE", (index) =>
+      index === 0 ? 0 : (index % 5) + 1
+    ),
     // Inclui concluídos no passado, no instante atual e no futuro.
     ...createFixtures(userId, "concluidos", "CONCLUIDO", (index) => (index % 5) - 2),
   ];
@@ -155,6 +159,9 @@ test("cada seção carrega sua primeira página com 20 itens, mesmo com muitos a
   assert.ok(concluidos.items.some((event) => event.eventDate >= NOW));
   assert.ok(proximos.items.length > 0);
   assert.ok(proximos.items.every((event) => !event.id.startsWith("outro-")));
+  assert.equal(proximos.items[0]?.id, "p01");
+  assert.ok(proximos.items.some((event) => event.id === "p01"));
+  assert.ok(!atrasados.items.some((event) => event.id === "p01"));
 
   assert.deepEqual(
     atrasados.items.map((event) => event.id),
@@ -174,10 +181,44 @@ test("as três seções percorrem 25 itens em ordem, sem repetir nem pular", asy
   const sections: AgendaSection[] = ["atrasados", "proximos", "concluidos"];
 
   for (const section of sections) {
-    const ids = await collectSectionPages(section, 10);
+    // 5 eventos compartilham cada data; take 7 corta um grupo de datas iguais.
+    const ids = await collectSectionPages(section, 7);
 
     assert.equal(ids.length, 25, `${section} não retornou todos os eventos`);
     assert.equal(new Set(ids).size, 25, `${section} repetiu eventos`);
     assert.deepEqual(ids, expectedIds(section), `${section} saiu da ordem`);
   }
+});
+
+test("cursores distintos avançam apenas a seção correspondente", async () => {
+  const first = await getAgendaSectionsForUser(testDb, userId, {}, NOW);
+
+  assert.equal(first.atrasados.items.length, 20);
+  assert.equal(first.proximos.items.length, 20);
+  assert.equal(first.concluidos.items.length, 20);
+  assert.ok(first.atrasados.nextCursor);
+  assert.ok(first.proximos.nextCursor);
+
+  const second = await getAgendaSectionsForUser(
+    testDb,
+    userId,
+    {
+      atrasados: first.atrasados.nextCursor,
+      proximos: first.proximos.nextCursor,
+    },
+    NOW
+  );
+
+  assert.deepEqual(
+    second.atrasados.items.map((event) => event.id),
+    expectedIds("atrasados").slice(20)
+  );
+  assert.deepEqual(
+    second.proximos.items.map((event) => event.id),
+    expectedIds("proximos").slice(20)
+  );
+  assert.deepEqual(
+    second.concluidos.items.map((event) => event.id),
+    expectedIds("concluidos").slice(0, 20)
+  );
 });

@@ -8,11 +8,12 @@ import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   deleteEventForUser,
+  getAgendaSectionsForUser,
   getEventByIdForUser,
   getUpcomingEventsForUser,
   getUrgentDeadlinesForUser,
-  listAgendaSectionForUser,
   updateEventStatusForUser,
+  type AgendaCursors,
   type EventWithProcess,
 } from "@/lib/services/events";
 import type { Page } from "@/lib/services/pagination";
@@ -26,11 +27,7 @@ import type { ActionState } from "@/types/actions";
 
 export type { ActionState };
 
-export interface AgendaCursors {
-  atrasados?: string | null;
-  proximos?: string | null;
-  concluidos?: string | null;
-}
+export type { AgendaCursors };
 
 function serializeEventPage(page: Page<EventWithProcess>) {
   return {
@@ -46,26 +43,17 @@ function serializeEventPage(page: Page<EventWithProcess>) {
 export async function getAgendaSections(cursors: AgendaCursors = {}) {
   const userId = await getCurrentUserId();
   const now = new Date();
-
-  const [atrasados, proximos, concluidos] = await Promise.all([
-    listAgendaSectionForUser(prisma, userId, "atrasados", {
-      cursor: cursors.atrasados,
-      now,
-    }),
-    listAgendaSectionForUser(prisma, userId, "proximos", {
-      cursor: cursors.proximos,
-      now,
-    }),
-    listAgendaSectionForUser(prisma, userId, "concluidos", {
-      cursor: cursors.concluidos,
-      now,
-    }),
-  ]);
+  const sections = await getAgendaSectionsForUser(
+    prisma,
+    userId,
+    cursors,
+    now
+  );
 
   return {
-    atrasados: serializeEventPage(atrasados),
-    proximos: serializeEventPage(proximos),
-    concluidos: serializeEventPage(concluidos),
+    atrasados: serializeEventPage(sections.atrasados),
+    proximos: serializeEventPage(sections.proximos),
+    concluidos: serializeEventPage(sections.concluidos),
   };
 }
 
