@@ -97,10 +97,18 @@ function DocumentItem({
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleConfirmDelete() {
     startDeleteTransition(async () => {
-      await deleteDocument(processId, document.id);
+      const result = await deleteDocument(processId, document.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setShowDeleteDialog(false);
     });
   }
@@ -155,7 +163,10 @@ function DocumentItem({
                 size="icon"
                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                 disabled={isDeleting}
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={() => {
+                  setDeleteError(null);
+                  setShowDeleteDialog(true);
+                }}
                 title="Remover documento"
               >
                 <Trash2 className="h-4 w-4" />
@@ -167,10 +178,14 @@ function DocumentItem({
 
       <ConfirmDeleteDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteError(null);
+        }}
         title="Remover Documento"
         description={`Deseja realmente remover o arquivo "${document.fileName}"? Esta ação excluirá permanentemente o arquivo do storage.`}
         isPending={isDeleting}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </>

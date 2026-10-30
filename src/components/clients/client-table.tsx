@@ -57,12 +57,20 @@ export function ClientTable({ clients }: ClientTableProps) {
   }, [clients, search]);
 
   const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleConfirmDelete() {
     if (!clientToDelete) return;
 
     startTransition(async () => {
-      await deleteClient(clientToDelete.id);
+      const result = await deleteClient(clientToDelete.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setClientToDelete(null);
     });
   }
@@ -156,7 +164,10 @@ export function ClientTable({ clients }: ClientTableProps) {
                         variant="destructive"
                         size="sm"
                         disabled={isPending}
-                        onClick={() => setClientToDelete({ id: client.id, name: client.name })}
+                        onClick={() => {
+                          setDeleteError(null);
+                          setClientToDelete({ id: client.id, name: client.name });
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                         Excluir
@@ -202,10 +213,16 @@ export function ClientTable({ clients }: ClientTableProps) {
 
       <ConfirmDeleteDialog
         open={!!clientToDelete}
-        onOpenChange={(open) => !open && setClientToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setClientToDelete(null);
+            setDeleteError(null);
+          }
+        }}
         title="Excluir Cliente"
         description={`Deseja realmente excluir o cliente "${clientToDelete?.name}"? Esta ação é irreversível e excluirá também os processos e documentos vinculados.`}
         isPending={isPending}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </div>

@@ -81,23 +81,33 @@ export function EventList({ events }: EventListProps) {
 
 function EventCard({ event }: { event: EventWithProcess }) {
   const [isPending, startTransition] = useTransition();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const isPast = event.eventDate < new Date();
   const isDone = event.status === "CONCLUIDO";
 
   function handleToggleStatus() {
     startTransition(async () => {
-      await updateEventStatus(
+      const result = await updateEventStatus(
         event.id,
         isDone ? "PENDENTE" : "CONCLUIDO"
       );
+
+      setStatusError(result.success ? null : result.message);
     });
   }
 
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
   function handleConfirmDelete() {
     startTransition(async () => {
-      await deleteEvent(event.id);
+      const result = await deleteEvent(event.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setShowDeleteDialog(false);
     });
   }
@@ -154,7 +164,10 @@ function EventCard({ event }: { event: EventWithProcess }) {
                 variant="destructive"
                 size="sm"
                 disabled={isPending}
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={() => {
+                  setDeleteError(null);
+                  setShowDeleteDialog(true);
+                }}
                 title="Excluir compromisso"
               >
                 <Trash2 className="h-4 w-4" />
@@ -167,14 +180,25 @@ function EventCard({ event }: { event: EventWithProcess }) {
             <p className="text-sm text-muted-foreground">{event.description}</p>
           </CardContent>
         )}
+        {statusError ? (
+          <CardContent className="pt-0">
+            <p role="alert" className="text-sm font-medium text-destructive">
+              {statusError}
+            </p>
+          </CardContent>
+        ) : null}
       </Card>
 
       <ConfirmDeleteDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteError(null);
+        }}
         title="Excluir Compromisso"
         description={`Deseja realmente remover o compromisso "${event.title}" da sua agenda?`}
         isPending={isPending}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </>

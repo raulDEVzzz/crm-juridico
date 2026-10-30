@@ -55,12 +55,20 @@ export function ProcessTable({ processes }: ProcessTableProps) {
   }, [processes, search]);
 
   const [processToDelete, setProcessToDelete] = useState<{ id: string; processNumber: string } | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function handleConfirmDelete() {
     if (!processToDelete) return;
 
     startTransition(async () => {
-      await deleteProcess(processToDelete.id);
+      const result = await deleteProcess(processToDelete.id);
+
+      if (!result.success) {
+        setDeleteError(result.message);
+        return;
+      }
+
+      setDeleteError(null);
       setProcessToDelete(null);
     });
   }
@@ -133,12 +141,13 @@ export function ProcessTable({ processes }: ProcessTableProps) {
                       variant="destructive"
                       size="sm"
                       disabled={isPending}
-                      onClick={() =>
+                      onClick={() => {
+                        setDeleteError(null);
                         setProcessToDelete({
                           id: process.id,
                           processNumber: process.processNumber,
-                        })
-                      }
+                        });
+                      }}
                     >
                       <Trash2 className="h-4 w-4" />
                       Excluir
@@ -178,10 +187,16 @@ export function ProcessTable({ processes }: ProcessTableProps) {
 
       <ConfirmDeleteDialog
         open={!!processToDelete}
-        onOpenChange={(open) => !open && setProcessToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setProcessToDelete(null);
+            setDeleteError(null);
+          }
+        }}
         title="Excluir Processo Judicial"
         description={`Deseja realmente excluir o processo nº ${processToDelete?.processNumber}? Todos os andamentos e documentos vinculados serão excluídos permanentemente.`}
         isPending={isPending}
+        error={deleteError}
         onConfirm={handleConfirmDelete}
       />
     </div>
