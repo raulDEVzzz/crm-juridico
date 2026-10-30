@@ -6,16 +6,12 @@ import { after } from "next/server";
 import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  createDocumentForUser,
   deleteDocumentForUser,
   getDocumentForUser,
+  uploadDocumentForUser,
 } from "@/lib/services/documents";
-import { buildStorageKey, getStorage } from "@/lib/storage";
-import {
-  drainStorageDeletionJobs,
-  enqueueStorageDeletion,
-} from "@/lib/storage/cleanup";
-import type { StorageAdapter } from "@/lib/storage/types";
+import { getStorage } from "@/lib/storage";
+import { drainStorageDeletionJobs } from "@/lib/storage/cleanup";
 import {
   documentUploadSchema,
   sanitizeFileName,
@@ -38,21 +34,6 @@ async function verifyProcessOwnership(processId: string, userId: string) {
       clientId: true,
     },
   });
-}
-
-async function discardUploadedFile(storage: StorageAdapter, key: string) {
-  try {
-    await storage.delete(key);
-  } catch (cleanupError) {
-    console.error(
-      "Erro ao desfazer upload sem registro; enfileirando limpeza:",
-      cleanupError
-    );
-    await enqueueStorageDeletion(prisma, [key]).catch(() => undefined);
-    after(async () => {
-      await drainStorageDeletionJobs().catch(() => undefined);
-    });
-  }
 }
 
 export async function uploadDocument(
@@ -102,42 +83,38 @@ export async function uploadDocument(
   }
 
   const safeFileName = sanitizeFileName(file.name);
-  const storageKey = buildStorageKey(userId, processId, safeFileName);
-
-  let storage: ReturnType<typeof getStorage> | undefined;
-  let uploaded = false;
 
   try {
-    storage = getStorage();
+    const storage = getStorage();
 
-    await storage.upload({
-      key: storageKey,
-      body: buffer,
-      contentType: contentValidation.contentType!,
-      contentLength: file.size,
-    });
-    uploaded = true;
+    // O service relê e trava o processo/cliente na transação, fechando a
+    // corrida com exclusão ou reatribuição do processo. Se o vínculo sumiu,
+    // ele mesmo remove o arquivo recém-enviado.
+    const result = await uploadDocumentForUser(
+      prisma,
+      storage,
+      {
+        userId,
+        processId,
+        fileName: safeFileName,
+        category: metadata.data.category || null,
+        body: buffer,
+        contentType: contentValidation.contentType!,
+      },
+      {
+        onCleanupFailure: () => {
+          after(async () => {
+            await drainStorageDeletionJobs().catch(() => undefined);
+          });
+        },
+      }
+    );
 
-    // A criação do registro relê e trava o processo/cliente na transação,
-    // fechando a corrida com exclusão ou reatribuição do processo.
-    const created = await createDocumentForUser(prisma, {
-      userId,
-      processId,
-      fileName: safeFileName,
-      fileUrl: storageKey,
-      category: metadata.data.category || null,
-    });
-
-    if (created.status !== "created") {
-      await discardUploadedFile(storage, storageKey);
+    if (result.status !== "created") {
       return { success: false, message: "Processo não encontrado." };
     }
   } catch (error) {
     console.error("Erro no upload:", error);
-
-    if (uploaded && storage) {
-      await discardUploadedFile(storage, storageKey);
-    }
 
     return {
       success: false,

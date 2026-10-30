@@ -1,6 +1,8 @@
 import type { PrismaClient } from "@prisma/client";
 
 import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
+import { buildStorageKey } from "@/lib/storage/types";
+import type { StorageAdapter } from "@/lib/storage/types";
 
 type EnqueueStorageDeletion = typeof enqueueStorageDeletion;
 
@@ -20,6 +22,30 @@ export type DeleteDocumentResult =
   | { status: "deleted"; storageKey: string }
   | { status: "process_not_found" }
   | { status: "document_not_found" };
+
+export interface UploadDocumentInput {
+  userId: string;
+  processId: string;
+  fileName: string;
+  category: string | null;
+  body: Buffer;
+  contentType: string;
+}
+
+export type UploadDocumentResult =
+  | {
+      status: "created";
+      documentId: string;
+      clientId: string;
+      storageKey: string;
+    }
+  | { status: "not_found"; storageKey: string };
+
+export interface UploadDocumentOptions {
+  enqueue?: EnqueueStorageDeletion;
+  /** Chamado quando o arquivo não pôde ser removido após a falha do banco. */
+  onCleanupFailure?: (storageKey: string) => void | Promise<void>;
+}
 
 export async function getDocumentForUser(
   db: PrismaClient,
@@ -98,6 +124,89 @@ export async function createDocumentForUser(
       clientId: process.clientId,
     };
   });
+}
+
+/**
+ * Faz o upload no storage e só então cria o registro, revalidando o processo
+ * dentro da transação. Se o processo deixou de existir, remove o arquivo para
+ * não deixar órfão.
+ */
+export async function uploadDocumentForUser(
+  db: PrismaClient,
+  storage: StorageAdapter,
+  input: UploadDocumentInput,
+  options: UploadDocumentOptions = {}
+): Promise<UploadDocumentResult> {
+  const storageKey = buildStorageKey(
+    input.userId,
+    input.processId,
+    input.fileName
+  );
+  const enqueue = options.enqueue ?? enqueueStorageDeletion;
+
+  let created: CreateDocumentResult;
+  let uploaded = false;
+
+  try {
+    await storage.upload({
+      key: storageKey,
+      body: input.body,
+      contentType: input.contentType,
+      contentLength: input.body.length,
+    });
+    uploaded = true;
+
+    created = await createDocumentForUser(db, {
+      userId: input.userId,
+      processId: input.processId,
+      fileName: input.fileName,
+      fileUrl: storageKey,
+      category: input.category,
+    });
+  } catch (error) {
+    if (uploaded) {
+      await discardUploadedFile(
+        db,
+        storage,
+        storageKey,
+        enqueue,
+        options.onCleanupFailure
+      );
+    }
+    throw error;
+  }
+
+  if (created.status !== "created") {
+    await discardUploadedFile(
+      db,
+      storage,
+      storageKey,
+      enqueue,
+      options.onCleanupFailure
+    );
+    return { status: "not_found", storageKey };
+  }
+
+  return { ...created, storageKey };
+}
+
+async function discardUploadedFile(
+  db: PrismaClient,
+  storage: StorageAdapter,
+  storageKey: string,
+  enqueue: EnqueueStorageDeletion,
+  onCleanupFailure?: (storageKey: string) => void | Promise<void>
+) {
+  try {
+    await storage.delete(storageKey);
+  } catch (error) {
+    console.error(
+      "Erro ao desfazer upload sem registro; enfileirando limpeza:",
+      error
+    );
+    await enqueue(db, [storageKey]).catch(() => undefined);
+    await onCleanupFailure?.(storageKey);
+  }
 }
 
 export async function deleteDocumentForUser(
