@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { purgeExpiredAttempts } from "@/lib/rate-limit";
 import {
+  MAX_ATTEMPTS,
   drainStorageDeletionJobs,
   purgeCompletedStorageJobs,
 } from "@/lib/storage/cleanup";
@@ -20,7 +21,9 @@ export async function GET() {
 
   try {
     // 1. Drena fila de exclusão pendente de arquivos no storage
-    const storageResult = await drainStorageDeletionJobs(50, { maxAttempts: 10 });
+    const storageResult = await drainStorageDeletionJobs(50, {
+      maxAttempts: MAX_ATTEMPTS,
+    });
 
     // 2. Purga jobs de exclusão já concluídos com mais de 24 horas
     const purgedStorageJobs = await purgeCompletedStorageJobs(24, 24 * 7);
