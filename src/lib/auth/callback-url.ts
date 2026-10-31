@@ -44,7 +44,9 @@ export function getSafeCallbackUrl(
     const url = new URL(callbackUrl, BASE_URL);
 
     if (url.origin !== BASE_URL.origin) return DEFAULT_CALLBACK_URL;
-    if (!url.pathname.startsWith("/")) return DEFAULT_CALLBACK_URL;
+    if (!url.pathname.startsWith("/") || url.pathname.startsWith("//")) {
+      return DEFAULT_CALLBACK_URL;
+    }
 
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
