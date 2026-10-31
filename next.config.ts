@@ -2,6 +2,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
 
+import { buildContentSecurityPolicy } from "./src/lib/security/csp";
+
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const securityHeaders = [
@@ -21,26 +23,15 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=()",
   },
   {
-    // Content-Security-Policy:
-    // - script-src 'unsafe-inline' 'unsafe-eval' são necessários para Next.js (RSC, hydration)
-    // - style-src 'unsafe-inline' é necessário para Tailwind CSS em runtime
-    // - img-src https: blob: data: cobre imagens externas, Presigned URLs e data URIs
-    // - connect-src https: permite chamadas para qualquer endpoint HTTPS (API, S3/R2, WhatsApp)
-    // - frame-ancestors 'none' é reforço adicional ao X-Frame-Options DENY
+    // Content-Security-Policy: `unsafe-eval` fica restrito ao desenvolvimento.
+    // Em produção, connect-src libera apenas a própria origem e o S3_ENDPOINT.
+    // `unsafe-inline` permanece até existir uma estratégia de nonce viável para
+    // as páginas estáticas geradas pelo Next.js.
     key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' https: blob: data:",
-      "connect-src 'self' https:",
-      "media-src 'self'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-    ].join("; "),
+    value: buildContentSecurityPolicy({
+      isProduction: process.env.NODE_ENV === "production",
+      s3Endpoint: process.env.S3_ENDPOINT,
+    }),
   },
 ];
 
