@@ -57,6 +57,80 @@ export function isValidCnj(value: string): boolean {
   return d === expectedDv;
 }
 
+/**
+ * Converte um valor monetário digitado para número.
+ *
+ * Aceita `"1.234,56"` (milhar com ponto e decimal com vírgula), `"1234.56"`
+ * (ponto decimal) e inteiros. Rejeita letras, separadores malformados
+ * (`"1,2,3"`), múltiplos sinais e valores negativos. Retorna `null` quando o
+ * valor não é válido — o schema transforma isso em erro de validação.
+ */
+export function parseCurrencyAmount(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "") return null;
+
+  const cleaned = trimmed
+    .replace(/^R\$\s*/i, "")
+    .replace(/\s/g, "");
+
+  if (cleaned === "" || cleaned.startsWith("-")) return null;
+  if (!/^\d[\d.,]*$/.test(cleaned)) return null;
+
+  const commaIndex = cleaned.indexOf(",");
+
+  if (commaIndex !== -1) {
+    if (commaIndex !== cleaned.lastIndexOf(",")) return null;
+
+    const [integerPart, decimalPart] = cleaned.split(",");
+
+    if (!integerPart || !decimalPart) return null;
+    if (!/^\d{1,3}(\.\d{3})*$/.test(integerPart) && !/^\d+$/.test(integerPart)) {
+      return null;
+    }
+    if (!/^\d{1,2}$/.test(decimalPart)) return null;
+
+    const parsed = Number(`${integerPart.replace(/\./g, "")}.${decimalPart}`);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  if (cleaned.includes(".")) {
+    const parts = cleaned.split(".");
+
+    if (parts.some((part) => part === "")) return null;
+
+    if (parts.length === 2) {
+      const [integerPart, decimalPart] = parts;
+
+      if (!/^\d+$/.test(integerPart) || !/^\d+$/.test(decimalPart)) {
+        return null;
+      }
+
+      // "1.234" é milhar; "1234.56" é decimal.
+      if (decimalPart.length === 3) {
+        if (integerPart.length > 3) return null;
+        const parsed = Number(`${integerPart}${decimalPart}`);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+
+      if (decimalPart.length > 2) return null;
+
+      const parsed = Number(`${integerPart}.${decimalPart}`);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    if (!/^\d{1,3}$/.test(parts[0])) return null;
+    if (!parts.slice(1).every((part) => /^\d{3}$/.test(part))) return null;
+
+    const parsed = Number(parts.join(""));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  if (!/^\d+$/.test(cleaned)) return null;
+
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 export const processFormSchema = z.object({
   clientId: z.string().min(1, "Selecione um cliente"),
   processNumber: z
@@ -75,22 +149,31 @@ export const processFormSchema = z.object({
   value: z
     .string()
     .optional()
-    .transform((val) => {
+    .transform((val, ctx) => {
       if (!val || val.trim() === "") return undefined;
-      
-      let cleaned = val.replace(/[R$\s]/gi, "");
-      
-      const lastCommaIndex = cleaned.lastIndexOf(",");
-      const lastDotIndex = cleaned.lastIndexOf(".");
-      
-      if (lastCommaIndex > lastDotIndex) {
-        cleaned = cleaned.replace(/\./g, "").replace(",", ".");
-      } else if (lastDotIndex > lastCommaIndex) {
-        cleaned = cleaned.replace(/,/g, "");
+
+      const trimmed = val.trim();
+      const withoutPrefix = trimmed.replace(/^R\$\s*/i, "");
+
+      if (withoutPrefix.startsWith("-")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Valor da causa não pode ser negativo",
+        });
+        return z.NEVER;
       }
-      
-      const parsed = parseFloat(cleaned);
-      return Number.isNaN(parsed) || parsed < 0 ? undefined : parsed;
+
+      const parsed = parseCurrencyAmount(trimmed);
+
+      if (parsed === null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Informe um valor válido",
+        });
+        return z.NEVER;
+      }
+
+      return parsed;
     }),
   notes: z.string().max(2000, "Observações muito longas").optional(),
 });

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatTimestampBR } from "@/lib/dates";
+import { formatCurrencyBRL } from "@/lib/format";
 import {
   LEGAL_AREA_LABELS,
   PROCESS_STATUS_LABELS,
@@ -132,14 +133,7 @@ export function ProcessDetailTabs({ process }: ProcessDetailTabsProps) {
               />
               <DetailItem
                 label="Valor da causa"
-                value={
-                  process.value
-                    ? process.value.toLocaleString("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      })
-                    : "—"
-                }
+                value={formatCurrencyBRL(process.value)}
               />
               <DetailItem
                 label="Cadastrado em"

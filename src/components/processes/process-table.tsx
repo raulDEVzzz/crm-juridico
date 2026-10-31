@@ -18,6 +18,7 @@ import {
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { formatTimestampBR } from "@/lib/dates";
+import { formatCurrencyBRL } from "@/lib/format";
 import {
   LEGAL_AREA_LABELS,
   PROCESS_STATUS_LABELS,
@@ -153,12 +154,7 @@ export function ProcessTable({ processes, search = "" }: ProcessTableProps) {
                 <div>
                   <p className="text-muted-foreground">Valor da causa</p>
                   <p className="font-medium">
-                    {process.value
-                      ? process.value.toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })
-                      : "—"}
+                    {formatCurrencyBRL(process.value)}
                   </p>
                 </div>
                 <div>

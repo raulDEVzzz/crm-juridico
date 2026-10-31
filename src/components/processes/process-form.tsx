@@ -153,12 +153,14 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <Input
             id="value"
             name="value"
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="decimal"
             defaultValue={process?.value ?? ""}
             placeholder="0,00"
           />
+          {state.errors?.value && (
+            <p className="text-sm text-destructive">{state.errors.value[0]}</p>
+          )}
         </div>
 
         <div className="space-y-2 md:col-span-2">
