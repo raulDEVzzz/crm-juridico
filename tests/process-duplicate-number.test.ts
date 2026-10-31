@@ -50,7 +50,21 @@ test("formulário só exibe a confirmação quando o servidor retorna aviso", ()
     "utf8"
   );
 
-  assert.match(source, /\{state\.warning && \(/);
+  assert.match(source, /\{state\.warning && warningIsCurrent && \(/);
   assert.match(source, /name="confirmDuplicateCnj"/);
   assert.match(source, /Salvar mesmo assim/);
+
+  // Campos controlados sobrevivem ao reset automático do React 19 antes da
+  // action, então a confirmação salva os valores que o usuário digitou.
+  for (const field of [
+    "clientId",
+    "processNumber",
+    "court",
+    "area",
+    "status",
+    "value",
+    "notes",
+  ]) {
+    assert.match(source, new RegExp(`value=\\{values\\.${field}\\}`), field);
+  }
 });

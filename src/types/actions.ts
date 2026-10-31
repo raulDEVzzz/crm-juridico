@@ -1,5 +1,9 @@
 export type ActionWarning = {
   message: string;
+  duplicateCnj?: {
+    clientId: string;
+    processNumber: string;
+  };
 };
 
 export type ActionState = {

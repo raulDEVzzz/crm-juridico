@@ -129,7 +129,13 @@ export async function createProcess(
     return {
       success: false,
       message: "",
-      warning: { message: duplicateDecision.message },
+      warning: {
+        message: duplicateDecision.message,
+        duplicateCnj: {
+          clientId: parsed.data.clientId,
+          processNumber: String(formData.get("processNumber") ?? ""),
+        },
+      },
     };
   }
 
@@ -229,7 +235,13 @@ export async function updateProcess(
     return {
       success: false,
       message: "",
-      warning: { message: duplicateDecision.message },
+      warning: {
+        message: duplicateDecision.message,
+        duplicateCnj: {
+          clientId: parsed.data.clientId,
+          processNumber: String(formData.get("processNumber") ?? ""),
+        },
+      },
     };
   }
 
