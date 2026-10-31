@@ -107,6 +107,14 @@ export const clientFormSchema = z
       .max(200, "Nome muito longo"),
     personType: personTypeEnum,
     document: z.string().transform(normalizeDigits),
+    email: z
+      .string()
+      .optional()
+      .transform((value) => {
+        const trimmed = value?.trim();
+        return trimmed ? trimmed : undefined;
+      })
+      .pipe(z.string().email("E-mail inválido").optional()),
     phone: z.string().transform(normalizeDigits),
     whatsapp: z
       .string()

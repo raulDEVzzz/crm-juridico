@@ -143,6 +143,10 @@ export function ClientTable({ clients, search = "" }: ClientTableProps) {
                 </CardHeader>
                 <CardContent className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
                   <div>
+                    <p className="text-muted-foreground">E-mail</p>
+                    <p className="break-all font-medium">{client.email ?? "—"}</p>
+                  </div>
+                  <div>
                     <p className="text-muted-foreground">Telefone</p>
                     <p className="font-medium">{formatPhone(client.phone)}</p>
                   </div>

@@ -21,6 +21,13 @@ function parseWithPhone(phone: string, whatsapp?: string) {
   });
 }
 
+function parseWithEmail(email?: string) {
+  return clientFormSchema.safeParse({
+    ...BASE_CLIENT,
+    ...(email === undefined ? {} : { email }),
+  });
+}
+
 function phoneErrors(phone: string) {
   const result = parseWithPhone(phone);
   assert.equal(result.success, false);
@@ -92,4 +99,29 @@ test("helper expõe a mensagem para uso direto", () => {
     getBrazilianPhoneValidationError("11999887766", "Telefone"),
     null
   );
+});
+
+test("e-mail é opcional e vazio vira ausente", () => {
+  for (const email of [undefined, "", "   "]) {
+    const result = parseWithEmail(email);
+    assert.equal(result.success, true);
+    assert.equal(result.success && result.data.email, undefined);
+  }
+});
+
+test("e-mail válido é normalizado com trim", () => {
+  const result = parseWithEmail("  maria@example.com  ");
+
+  assert.equal(result.success, true);
+  assert.equal(result.success && result.data.email, "maria@example.com");
+});
+
+test("e-mail inválido retorna mensagem em português", () => {
+  for (const email of ["invalido", "maria@", "@example.com", "a b@example.com"]) {
+    const result = parseWithEmail(email);
+    assert.equal(result.success, false);
+    assert.deepEqual(result.error!.flatten().fieldErrors.email, [
+      "E-mail inválido",
+    ]);
+  }
 });
