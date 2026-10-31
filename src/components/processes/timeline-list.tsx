@@ -1,8 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Clock, FileText, Loader2, Plus, Trash2 } from "lucide-react";
 import type { ProcessTimeline } from "@prisma/client";
 
@@ -31,6 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { formatTimestampBR } from "@/lib/dates";
 
 const initialState: ActionState = {
   success: false,
@@ -177,9 +176,7 @@ function TimelineEntry({
               <div>
                 <CardTitle className="text-base">{entry.title}</CardTitle>
                 <CardDescription>
-                  {format(entry.date, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
-                    locale: ptBR,
-                  })}
+                  {formatTimestampBR(entry.date, { withTime: true })}
                 </CardDescription>
               </div>
               <Button

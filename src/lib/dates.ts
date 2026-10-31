@@ -58,6 +58,10 @@ export function formatDateInput(date: Date | null | undefined): string {
 /**
  * Formata um Date (armazenado em UTC meia-noite) para exibição
  * no formato padrão brasileiro 'DD/MM/YYYY', sem sofrer conversão de fuso.
+ *
+ * Use somente para datas sem componente de horário (ex: nascimento). Para
+ * timestamps (createdAt, updatedAt, uploadedAt, andamentos), use
+ * `formatTimestampBR`, que converte para o fuso de Brasília.
  */
 export function formatDateBR(date: Date | null | undefined): string {
   if (!date) return "—";
@@ -67,19 +71,43 @@ export function formatDateBR(date: Date | null | undefined): string {
   return `${day}/${month}/${year}`;
 }
 
+export interface FormatTimestampOptions {
+  /** Inclui a hora no formato 'DD/MM/YYYY às HH:mm'. */
+  withTime?: boolean;
+}
+
 /**
- * Formata um timestamp completo (ex: createdAt, updatedAt) no fuso de Brasília.
+ * Formata um timestamp completo (ex: createdAt, uploadedAt, andamentos) no
+ * fuso de Brasília. O fuso é explícito, portanto o resultado é igual no
+ * servidor (UTC) e no navegador, evitando hydration mismatch.
  */
-export function formatTimestampBR(date: Date | string | null | undefined): string {
+export function formatTimestampBR(
+  date: Date | string | null | undefined,
+  options: FormatTimestampOptions = {}
+): string {
   if (!date) return "—";
   const parsed = typeof date === "string" ? new Date(date) : date;
   if (Number.isNaN(parsed.getTime())) return "—";
-  return new Intl.DateTimeFormat("pt-BR", {
+
+  const formatter = new Intl.DateTimeFormat("pt-BR", {
     timeZone: "America/Sao_Paulo",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(parsed);
+    ...(options.withTime
+      ? { hour: "2-digit", minute: "2-digit", hour12: false }
+      : {}),
+  });
+
+  if (!options.withTime) {
+    return formatter.format(parsed);
+  }
+
+  const parts = formatter.formatToParts(parsed);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+
+  return `${get("day")}/${get("month")}/${get("year")} às ${get("hour")}:${get("minute")}`;
 }
 
 /**

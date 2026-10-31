@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
-import { formatDateBR } from "@/lib/dates";
+import { formatDateBR, formatTimestampBR } from "@/lib/dates";
 import { formatDocument, formatPhone } from "@/lib/validations/client";
 import { getWhatsAppNumber } from "@/lib/whatsapp";
 
@@ -161,7 +161,7 @@ export function ClientTable({ clients, search = "" }: ClientTableProps) {
                   <div>
                     <p className="text-muted-foreground">Cadastrado em</p>
                     <p className="font-medium">
-                      {formatDateBR(client.createdAt)}
+                      {formatTimestampBR(client.createdAt)}
                     </p>
                   </div>
                   {client.notes && (

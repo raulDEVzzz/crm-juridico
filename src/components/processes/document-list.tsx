@@ -1,7 +1,5 @@
 "use client";
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { Download, File, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
@@ -19,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-dialog";
 import { DocumentUploadZone } from "@/components/processes/document-upload-zone";
+import { formatTimestampBR } from "@/lib/dates";
 
 interface DocumentListProps {
   processId: string;
@@ -135,9 +134,7 @@ function DocumentItem({
                 <CardTitle className="text-base">{document.fileName}</CardTitle>
                 <CardDescription>
                   Enviado em{" "}
-                  {format(document.uploadedAt, "dd/MM/yyyy 'às' HH:mm", {
-                    locale: ptBR,
-                  })}
+                  {formatTimestampBR(document.uploadedAt, { withTime: true })}
                 </CardDescription>
               </div>
             </div>
