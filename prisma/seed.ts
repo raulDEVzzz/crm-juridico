@@ -102,69 +102,74 @@ async function main() {
     },
   });
 
-  await prisma.processTimeline.createMany({
-    data: [
-      {
-        processId: legalProcess.id,
-        title: "Distribuição",
-        description: "Processo distribuído ao juízo.",
-        date: new Date("2024-03-15T10:00:00"),
-      },
-      {
-        processId: legalProcess.id,
-        title: "Publicação",
-        description: "Publicado no DJE.",
-        date: new Date("2024-04-02T14:30:00"),
-      },
-    ],
-    skipDuplicates: true,
-  });
+  const timelineEntries = [
+    {
+      id: "seed-timeline-1",
+      processId: legalProcess.id,
+      title: "Distribuição",
+      description: "Processo distribuído ao juízo.",
+      date: new Date("2024-03-15T10:00:00"),
+    },
+    {
+      id: "seed-timeline-2",
+      processId: legalProcess.id,
+      title: "Publicação",
+      description: "Publicado no DJE.",
+      date: new Date("2024-04-02T14:30:00"),
+    },
+  ];
 
-  await prisma.document.upsert({
-    where: { id: "seed-doc-1" },
-    update: {},
-    create: {
-      id: "seed-doc-1",
-      fileName: "peticao-inicial.pdf",
-      fileUrl: `uploads/${user.id}/${legalProcess.id}/seed-peticao-inicial.pdf`,
-      category: "Petição",
+  for (const entry of timelineEntries) {
+    await prisma.processTimeline.upsert({
+      where: { id: entry.id },
+      update: {},
+      create: entry,
+    });
+  }
+
+  // O documento fictício antigo não tem arquivo no storage; remove o registro
+  // para o seed não deixar uma referência quebrada.
+  await prisma.document.deleteMany({ where: { id: "seed-doc-1" } });
+
+  const eventEntries = [
+    {
+      id: "seed-event-1",
+      title: "Audiência de conciliação",
+      description: "Comparecer com procuração e documentos.",
+      eventDate: new Date(currentYear, today.getMonth(), today.getDate() + 2, 14, 0),
+      type: "AUDIENCIA" as const,
+      status: "PENDENTE" as const,
       userId: user.id,
-      clientId: clients[0].id,
       processId: legalProcess.id,
     },
-  });
+    {
+      id: "seed-event-2",
+      title: "Prazo para contestação",
+      description: "Prazo fatal — parte ré.",
+      eventDate: new Date(currentYear, today.getMonth(), today.getDate() + 10, 23, 59),
+      type: "PRAZO" as const,
+      status: "PENDENTE" as const,
+      userId: user.id,
+      processId: legalProcess.id,
+    },
+    {
+      id: "seed-event-3",
+      title: "Reunião com cliente",
+      description: "Alinhamento estratégico.",
+      eventDate: new Date(currentYear, today.getMonth(), today.getDate() + 1, 10, 0),
+      type: "REUNIAO" as const,
+      status: "PENDENTE" as const,
+      userId: user.id,
+    },
+  ];
 
-  await prisma.event.createMany({
-    data: [
-      {
-        title: "Audiência de conciliação",
-        description: "Comparecer com procuração e documentos.",
-        eventDate: new Date(currentYear, today.getMonth(), today.getDate() + 2, 14, 0),
-        type: "AUDIENCIA",
-        status: "PENDENTE",
-        userId: user.id,
-        processId: legalProcess.id,
-      },
-      {
-        title: "Prazo para contestação",
-        description: "Prazo fatal — parte ré.",
-        eventDate: new Date(currentYear, today.getMonth(), today.getDate() + 10, 23, 59),
-        type: "PRAZO",
-        status: "PENDENTE",
-        userId: user.id,
-        processId: legalProcess.id,
-      },
-      {
-        title: "Reunião com cliente",
-        description: "Alinhamento estratégico.",
-        eventDate: new Date(currentYear, today.getMonth(), today.getDate() + 1, 10, 0),
-        type: "REUNIAO",
-        status: "PENDENTE",
-        userId: user.id,
-      },
-    ],
-    skipDuplicates: true,
-  });
+  for (const entry of eventEntries) {
+    await prisma.event.upsert({
+      where: { id: entry.id },
+      update: {},
+      create: entry,
+    });
+  }
 
   console.log("Seed concluído com sucesso!");
   console.log("Usuário demo pronto para login: advogado (e-mail cadastrado: advogado@crm.local)");
