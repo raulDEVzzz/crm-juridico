@@ -70,6 +70,27 @@ test("segunda execução do seed não duplica andamentos nem eventos", async () 
 });
 
 test("seed não mantém documento apontando para arquivo inexistente", async () => {
+  const user = await testDb.user.findUniqueOrThrow({
+    where: { email: "advogado@crm.local" },
+  });
+
+  await testDb.document.create({
+    data: {
+      id: "seed-doc-1",
+      fileName: "peticao-inicial.pdf",
+      fileUrl: "uploads/legacy/seed-peticao-inicial.pdf",
+      userId: user.id,
+    },
+  });
+
+  assert.equal(
+    await testDb.document.count({ where: { id: "seed-doc-1" } }),
+    1,
+    "o documento legado precisa existir antes do seed"
+  );
+
+  runSeed();
+
   assert.equal(
     await testDb.document.count({ where: { id: "seed-doc-1" } }),
     0
