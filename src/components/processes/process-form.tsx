@@ -175,6 +175,25 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
         </div>
       </div>
 
+      {state.warning && (
+        <div
+          role="alert"
+          className="rounded-md border border-amber-500/60 bg-amber-50 p-4 text-sm text-amber-950"
+        >
+          <p className="font-medium">{state.warning.message}</p>
+          <label className="mt-3 flex items-start gap-2">
+            <input
+              type="checkbox"
+              name="confirmDuplicateCnj"
+              value="on"
+              required
+              className="mt-0.5"
+            />
+            <span>Salvar mesmo assim</span>
+          </label>
+        </div>
+      )}
+
       {state.message && !state.success && (
         <p className="text-sm text-destructive">{state.message}</p>
       )}

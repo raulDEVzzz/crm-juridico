@@ -9,6 +9,7 @@ import {
 
 import { formatCnj } from "@/lib/validations/process";
 import { AUDIT_ACTIONS, AUDIT_ENTITIES, writeAuditLog } from "@/lib/audit";
+import type { DuplicateProcessNumber } from "@/lib/processes/duplicate-number";
 import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import { countPendingDeadlinesForProcess } from "@/lib/services/deadlines";
 import {
@@ -102,6 +103,41 @@ export type UpdateProcessResult =
   | { status: "updated" }
   | { status: "not_found" }
   | { status: "client_not_found" };
+
+/**
+ * Busca o mesmo CNJ entre os processos do usuário, opcionalmente ignorando
+ * o processo que está sendo editado. Nunca considera clientes de outro dono.
+ */
+export async function findDuplicateProcessNumberForUser(
+  db: PrismaClient,
+  userId: string,
+  processNumber: string,
+  options: { excludeProcessId?: string } = {}
+): Promise<DuplicateProcessNumber | null> {
+  const duplicate = await db.process.findFirst({
+    where: {
+      processNumber,
+      client: { userId },
+      ...(options.excludeProcessId
+        ? { id: { not: options.excludeProcessId } }
+        : {}),
+    },
+    select: {
+      id: true,
+      clientId: true,
+      client: { select: { name: true } },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (!duplicate) return null;
+
+  return {
+    id: duplicate.id,
+    clientId: duplicate.clientId,
+    clientName: duplicate.client.name,
+  };
+}
 
 export async function getProcessByIdForUser(
   db: PrismaClient,

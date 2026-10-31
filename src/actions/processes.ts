@@ -9,9 +9,11 @@ import { Prisma, type LegalArea, type ProcessStatus } from "@prisma/client";
 import { getCurrentUserId } from "@/lib/auth";
 import { resolveClientIp } from "@/lib/auth/credentials";
 import { parseDateTime } from "@/lib/dates";
+import { decideDuplicateProcessNumber } from "@/lib/processes/duplicate-number";
 import { prisma } from "@/lib/prisma";
 import {
   deleteProcessForUser,
+  findDuplicateProcessNumberForUser,
   getProcessByIdForUser,
   listProcessOptionsForUser,
   listProcessesForUser,
@@ -108,6 +110,29 @@ export async function createProcess(
     return { success: false, message: "Cliente não encontrado." };
   }
 
+  const duplicate = await findDuplicateProcessNumberForUser(
+    prisma,
+    userId,
+    parsed.data.processNumber
+  );
+  const duplicateDecision = decideDuplicateProcessNumber(
+    duplicate,
+    parsed.data.clientId,
+    formData.get("confirmDuplicateCnj") === "on"
+  );
+
+  if (duplicateDecision.action === "block") {
+    return { success: false, message: duplicateDecision.message };
+  }
+
+  if (duplicateDecision.action === "warn") {
+    return {
+      success: false,
+      message: "",
+      warning: { message: duplicateDecision.message },
+    };
+  }
+
   let createdProcessId: string;
 
   try {
@@ -182,6 +207,30 @@ export async function updateProcess(
 
   if (!client) {
     return { success: false, message: "Cliente não encontrado." };
+  }
+
+  const duplicate = await findDuplicateProcessNumberForUser(
+    prisma,
+    userId,
+    parsed.data.processNumber,
+    { excludeProcessId: id }
+  );
+  const duplicateDecision = decideDuplicateProcessNumber(
+    duplicate,
+    parsed.data.clientId,
+    formData.get("confirmDuplicateCnj") === "on"
+  );
+
+  if (duplicateDecision.action === "block") {
+    return { success: false, message: duplicateDecision.message };
+  }
+
+  if (duplicateDecision.action === "warn") {
+    return {
+      success: false,
+      message: "",
+      warning: { message: duplicateDecision.message },
+    };
   }
 
   let result: Awaited<ReturnType<typeof updateProcessForUser>>;
