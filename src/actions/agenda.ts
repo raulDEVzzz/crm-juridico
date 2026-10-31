@@ -8,13 +8,15 @@ import { getCurrentUserId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   deleteEventForUser,
+  getAgendaSectionsForUser,
   getEventByIdForUser,
   getUpcomingEventsForUser,
   getUrgentDeadlinesForUser,
-  listEventsForUser,
   updateEventStatusForUser,
-  type ListEventsParams,
+  type AgendaCursors,
+  type EventWithProcess,
 } from "@/lib/services/events";
+import type { Page } from "@/lib/services/pagination";
 import { serializeProcess } from "@/lib/serializers/process";
 import {
   eventFormSchema,
@@ -25,16 +27,33 @@ import type { ActionState } from "@/types/actions";
 
 export type { ActionState };
 
-export async function getEvents(params: ListEventsParams = {}) {
-  const userId = await getCurrentUserId();
-  const page = await listEventsForUser(prisma, userId, params);
+export type { AgendaCursors };
 
+function serializeEventPage(page: Page<EventWithProcess>) {
   return {
     ...page,
     items: page.items.map((event) => ({
       ...event,
       process: event.process ? serializeProcess(event.process) : null,
     })),
+  };
+}
+
+/** Busca as três seções da agenda com o mesmo instante de referência. */
+export async function getAgendaSections(cursors: AgendaCursors = {}) {
+  const userId = await getCurrentUserId();
+  const now = new Date();
+  const sections = await getAgendaSectionsForUser(
+    prisma,
+    userId,
+    cursors,
+    now
+  );
+
+  return {
+    atrasados: serializeEventPage(sections.atrasados),
+    proximos: serializeEventPage(sections.proximos),
+    concluidos: serializeEventPage(sections.concluidos),
   };
 }
 

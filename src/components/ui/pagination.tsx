@@ -2,34 +2,37 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  buildPaginationHref,
+  type PaginationSearchParams,
+} from "@/lib/pagination-url";
 
 interface PaginationProps {
   basePath: string;
   nextCursor: string | null;
   currentCursor?: string;
-  /** Filtros que precisam sobreviver à navegação entre páginas. */
-  filters?: Record<string, string | undefined>;
+  /** Nome do parâmetro de cursor usado por esta listagem. */
+  cursorParam?: string;
+  /** Parâmetros que precisam sobreviver à navegação entre páginas. */
+  filters?: PaginationSearchParams;
 }
 
 export function Pagination({
   basePath,
   nextCursor,
   currentCursor,
+  cursorParam = "cursor",
   filters = {},
 }: PaginationProps) {
   if (!nextCursor && !currentCursor) return null;
 
   function buildHref(cursor?: string) {
-    const params = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(filters)) {
-      if (value) params.set(key, value);
-    }
-
-    if (cursor) params.set("cursor", cursor);
-
-    const query = params.toString();
-    return query ? `${basePath}?${query}` : basePath;
+    return buildPaginationHref({
+      basePath,
+      cursorParam,
+      cursor,
+      params: filters,
+    });
   }
 
   return (
