@@ -133,7 +133,7 @@ export async function createProcess(
         message: duplicateDecision.message,
         duplicateCnj: {
           clientId: parsed.data.clientId,
-          processNumber: String(formData.get("processNumber") ?? ""),
+          processNumber: parsed.data.processNumber,
         },
       },
     };
@@ -239,7 +239,7 @@ export async function updateProcess(
         message: duplicateDecision.message,
         duplicateCnj: {
           clientId: parsed.data.clientId,
-          processNumber: String(formData.get("processNumber") ?? ""),
+          processNumber: parsed.data.processNumber,
         },
       },
     };

@@ -19,6 +19,7 @@ import {
   formatCnj,
   LEGAL_AREA_LABELS,
   PROCESS_STATUS_LABELS,
+  stripCnj,
 } from "@/lib/validations/process";
 
 const initialState: ActionState = {
@@ -76,7 +77,8 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
   const warningIsCurrent =
     !!state.warning?.duplicateCnj &&
     state.warning.duplicateCnj.clientId === values.clientId &&
-    state.warning.duplicateCnj.processNumber === values.processNumber;
+    stripCnj(state.warning.duplicateCnj.processNumber) ===
+      stripCnj(values.processNumber);
 
   return (
     <form action={formAction} className="space-y-6">
