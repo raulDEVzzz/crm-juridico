@@ -53,7 +53,7 @@ export const testDb = new PrismaClient({
 
 export async function resetTestData() {
   await testDb.$executeRawUnsafe(
-    'TRUNCATE TABLE "login_attempts", "storage_deletion_jobs", "users" RESTART IDENTITY CASCADE'
+    'TRUNCATE TABLE "audit_logs", "login_attempts", "storage_deletion_jobs", "users" RESTART IDENTITY CASCADE'
   );
 }
 

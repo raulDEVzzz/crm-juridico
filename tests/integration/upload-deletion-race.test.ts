@@ -16,6 +16,8 @@ import {
   testDb,
 } from "./helpers/db";
 
+const TEST_IP = "203.0.113.7";
+
 beforeEach(async () => {
   await resetTestData();
 });
@@ -104,7 +106,7 @@ test("upload concorrente à exclusão falha sem documento nem arquivo órfão", 
   try {
     await documentLockedPromise;
 
-    deletion = deleteProcessForUser(testDb, user.id, process.id);
+    deletion = deleteProcessForUser(testDb, user.id, process.id, { ip: TEST_IP });
     await waitForProcessLock(process.id);
 
     upload = uploadDocumentForUser(testDb, storage, {
@@ -178,7 +180,7 @@ test("upload concluído antes da exclusão enfileira a chave no outbox", async (
       "%PDF-1.4 contrato"
     );
 
-    const deletion = await deleteProcessForUser(testDb, user.id, process.id);
+    const deletion = await deleteProcessForUser(testDb, user.id, process.id, { ip: TEST_IP });
 
     assert.equal(deletion.status, "deleted");
     if (deletion.status !== "deleted") {

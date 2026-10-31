@@ -15,6 +15,8 @@ import {
   testDb,
 } from "./helpers/db";
 
+const TEST_IP = "203.0.113.7";
+
 beforeEach(async () => {
   await resetTestData();
 });
@@ -43,7 +45,7 @@ test("um usuário não consegue ler nem alterar evento de outro", async () => {
     false
   );
   assert.equal(
-    await deleteEventForUser(testDb, intruder.id, event.id),
+    await deleteEventForUser(testDb, intruder.id, event.id, { ip: TEST_IP }),
     false
   );
 
@@ -65,6 +67,9 @@ test("dono consegue alterar status e excluir o próprio evento", async () => {
     (await testDb.event.findUnique({ where: { id: event.id } }))?.status,
     "CONCLUIDO"
   );
-  assert.equal(await deleteEventForUser(testDb, owner.id, event.id), true);
+  assert.equal(
+    await deleteEventForUser(testDb, owner.id, event.id, { ip: TEST_IP }),
+    true
+  );
   assert.equal(await testDb.event.findUnique({ where: { id: event.id } }), null);
 });

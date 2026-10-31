@@ -256,3 +256,61 @@ test("authorizeCredentials falha fechado quando o registro da tentativa lança e
     /registro indisponível/
   );
 });
+
+test("authorizeCredentials registra login com o IP do header e ignora o corpo", async () => {
+  const entries: Array<{ userId: string; ip: string }> = [];
+  const harness = makeDeps({
+    recordLoginAudit: async (entry) => {
+      entries.push(entry);
+    },
+  });
+
+  const result = await authorizeCredentials(
+    {
+      username: "alice",
+      password: "secret123",
+      clientIp: "198.51.100.99",
+    },
+    new Headers({ "x-real-ip": "203.0.113.7" }),
+    harness.deps
+  );
+
+  assert.equal(result?.id, "user-1");
+  assert.deepEqual(entries, [{ userId: "user-1", ip: "203.0.113.7" }]);
+});
+
+test("falha na auditoria de login não impede o login", async (t) => {
+  t.mock.method(console, "error", () => undefined);
+  const harness = makeDeps({
+    recordLoginAudit: async () => {
+      throw new Error("auditoria indisponível");
+    },
+  });
+
+  const result = await authorizeCredentials(
+    { username: "alice", password: "secret123" },
+    new Headers({ "x-real-ip": "203.0.113.7" }),
+    harness.deps
+  );
+
+  assert.equal(result?.id, "user-1");
+});
+
+test("authorizeCredentials não registra auditoria quando a senha é inválida", async () => {
+  const entries: Array<{ userId: string; ip: string }> = [];
+  const harness = makeDeps({
+    comparePassword: async () => false,
+    recordLoginAudit: async (entry) => {
+      entries.push(entry);
+    },
+  });
+
+  const result = await authorizeCredentials(
+    { username: "alice", password: "secret123" },
+    new Headers({ "x-real-ip": "203.0.113.7" }),
+    harness.deps
+  );
+
+  assert.equal(result, null);
+  assert.deepEqual(entries, []);
+});

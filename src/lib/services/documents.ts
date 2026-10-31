@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
 
+import { AUDIT_ACTIONS, AUDIT_ENTITIES, writeAuditLog } from "@/lib/audit";
 import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import { buildStorageKey } from "@/lib/storage/types";
 import type { StorageAdapter } from "@/lib/storage/types";
@@ -214,7 +215,7 @@ export async function deleteDocumentForUser(
   userId: string,
   processId: string,
   documentId: string,
-  options: { enqueue?: EnqueueStorageDeletion } = {}
+  options: { enqueue?: EnqueueStorageDeletion; ip: string }
 ): Promise<DeleteDocumentResult> {
   const enqueue = options.enqueue ?? enqueueStorageDeletion;
 
@@ -242,6 +243,15 @@ export async function deleteDocumentForUser(
     }
 
     await tx.document.delete({ where: { id: documentId } });
+
+    await writeAuditLog(tx, {
+      userId,
+      action: AUDIT_ACTIONS.DELETE,
+      entity: AUDIT_ENTITIES.DOCUMENT,
+      entityId: documentId,
+      ip: options.ip,
+    });
+
     await enqueue(tx, [document.fileUrl]);
 
     return { status: "deleted", storageKey: document.fileUrl };

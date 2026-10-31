@@ -2,6 +2,11 @@ import { isIP } from "node:net";
 
 import bcrypt from "bcryptjs";
 
+import {
+  AUDIT_ACTIONS,
+  AUDIT_ENTITIES,
+  recordAuditLogSafely,
+} from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import {
   ACCOUNT_IP_MAX_ATTEMPTS,
@@ -38,6 +43,7 @@ export interface CredentialsAuthorizeDeps {
   isKeyBlocked(key: string): Promise<boolean>;
   recordFailedAttempt(key: string, maxAttempts: number): Promise<unknown>;
   clearAttempts(key: string): Promise<void>;
+  recordLoginAudit?(entry: { userId: string; ip: string }): Promise<void>;
 }
 
 const defaultDeps: CredentialsAuthorizeDeps = {
@@ -46,6 +52,14 @@ const defaultDeps: CredentialsAuthorizeDeps = {
   isKeyBlocked,
   recordFailedAttempt,
   clearAttempts,
+  recordLoginAudit: (entry) =>
+    recordAuditLogSafely({
+      userId: entry.userId,
+      action: AUDIT_ACTIONS.LOGIN,
+      entity: AUDIT_ENTITIES.USER,
+      entityId: entry.userId,
+      ip: entry.ip,
+    }),
 };
 
 function parseIpCandidate(value: string | null): string | null {
@@ -135,6 +149,14 @@ export async function authorizeCredentials(
     deps.clearAttempts(userKey),
     deps.clearAttempts(userIpKey),
   ]);
+
+  if (deps.recordLoginAudit) {
+    try {
+      await deps.recordLoginAudit({ userId: user.id, ip: clientIp });
+    } catch (error) {
+      console.error("Falha ao registrar login na auditoria:", error);
+    }
+  }
 
   return {
     id: user.id,

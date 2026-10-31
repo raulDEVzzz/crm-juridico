@@ -8,6 +8,7 @@ import {
 } from "@prisma/client";
 
 import { formatCnj } from "@/lib/validations/process";
+import { AUDIT_ACTIONS, AUDIT_ENTITIES, writeAuditLog } from "@/lib/audit";
 import { enqueueStorageDeletion } from "@/lib/storage/cleanup";
 import { countPendingDeadlinesForProcess } from "@/lib/services/deadlines";
 import {
@@ -180,7 +181,7 @@ export async function deleteProcessForUser(
   db: PrismaClient,
   userId: string,
   processId: string,
-  options: { enqueue?: EnqueueStorageDeletion } = {}
+  options: { enqueue?: EnqueueStorageDeletion; ip: string }
 ): Promise<DeleteProcessResult> {
   const enqueue = options.enqueue ?? enqueueStorageDeletion;
 
@@ -225,6 +226,14 @@ export async function deleteProcessForUser(
 
     await tx.document.deleteMany({ where: { processId, userId } });
     await tx.process.delete({ where: { id: processId } });
+
+    await writeAuditLog(tx, {
+      userId,
+      action: AUDIT_ACTIONS.DELETE,
+      entity: AUDIT_ENTITIES.PROCESS,
+      entityId: processId,
+      ip: options.ip,
+    });
 
     const storageKeys = documents.map((document) => document.fileUrl);
     await enqueue(tx, storageKeys);
