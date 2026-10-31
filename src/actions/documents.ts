@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { after } from "next/server";
 
 import { getCurrentUserId } from "@/lib/auth";
+import { resolveClientIp } from "@/lib/auth/credentials";
 import { prisma } from "@/lib/prisma";
 import {
   deleteDocumentForUser,
@@ -132,6 +134,7 @@ export async function deleteDocument(
   documentId: string
 ): Promise<ActionState> {
   const userId = await getCurrentUserId();
+  const clientIp = resolveClientIp(await headers());
 
   let result: Awaited<ReturnType<typeof deleteDocumentForUser>>;
 
@@ -140,7 +143,8 @@ export async function deleteDocument(
       prisma,
       userId,
       processId,
-      documentId
+      documentId,
+      { ip: clientIp }
     );
   } catch (error) {
     console.error("Erro ao remover documento e enfileirar storage:", error);

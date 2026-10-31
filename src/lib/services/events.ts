@@ -5,6 +5,7 @@ import {
 } from "@prisma/client";
 
 import { getBrasiliaDateParts } from "@/lib/dates";
+import { AUDIT_ACTIONS, AUDIT_ENTITIES, writeAuditLog } from "@/lib/audit";
 import {
   buildPage,
   normalizePagination,
@@ -262,11 +263,26 @@ export async function updateEventStatusForUser(
 export async function deleteEventForUser(
   db: PrismaClient,
   userId: string,
-  eventId: string
+  eventId: string,
+  options: { ip: string }
 ): Promise<boolean> {
-  const result = await db.event.deleteMany({
-    where: { id: eventId, userId },
-  });
+  return db.$transaction(async (tx) => {
+    const result = await tx.event.deleteMany({
+      where: { id: eventId, userId },
+    });
 
-  return result.count > 0;
+    if (result.count === 0) {
+      return false;
+    }
+
+    await writeAuditLog(tx, {
+      userId,
+      action: AUDIT_ACTIONS.DELETE,
+      entity: AUDIT_ENTITIES.EVENT,
+      entityId: eventId,
+      ip: options.ip,
+    });
+
+    return true;
+  });
 }

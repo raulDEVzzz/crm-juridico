@@ -1,5 +1,6 @@
 import { Prisma, type Client, type PrismaClient } from "@prisma/client";
 
+import { AUDIT_ACTIONS, AUDIT_ENTITIES, writeAuditLog } from "@/lib/audit";
 import {
   getBirthdayMonthDayWindow,
   isLeapYear,
@@ -142,7 +143,7 @@ export async function deleteClientForUser(
   db: PrismaClient,
   userId: string,
   clientId: string,
-  options: { enqueue?: EnqueueStorageDeletion } = {}
+  options: { enqueue?: EnqueueStorageDeletion; ip: string }
 ): Promise<DeleteClientResult> {
   const enqueue = options.enqueue ?? enqueueStorageDeletion;
 
@@ -204,6 +205,14 @@ export async function deleteClientForUser(
 
     await tx.document.deleteMany({ where: documentWhere });
     await tx.client.delete({ where: { id: clientId } });
+
+    await writeAuditLog(tx, {
+      userId,
+      action: AUDIT_ACTIONS.DELETE,
+      entity: AUDIT_ENTITIES.CLIENT,
+      entityId: clientId,
+      ip: options.ip,
+    });
 
     const storageKeys = documents.map((document) => document.fileUrl);
     await enqueue(tx, storageKeys);

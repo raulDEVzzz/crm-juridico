@@ -1,10 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { EventStatus, EventType } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
+import { resolveClientIp } from "@/lib/auth/credentials";
 import { prisma } from "@/lib/prisma";
 import {
   deleteEventForUser,
@@ -211,11 +213,12 @@ export async function updateEventStatus(
 
 export async function deleteEvent(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
+  const clientIp = resolveClientIp(await headers());
 
   let deleted = false;
 
   try {
-    deleted = await deleteEventForUser(prisma, userId, id);
+    deleted = await deleteEventForUser(prisma, userId, id, { ip: clientIp });
   } catch (error) {
     console.error("Erro ao excluir compromisso:", error);
     return { success: false, message: "Erro ao excluir o compromisso." };

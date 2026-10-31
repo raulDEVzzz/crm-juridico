@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { Prisma, type LegalArea, type ProcessStatus } from "@prisma/client";
 
 import { getCurrentUserId } from "@/lib/auth";
+import { resolveClientIp } from "@/lib/auth/credentials";
 import { parseDateTime } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
 import {
@@ -226,11 +228,12 @@ export async function updateProcess(
 
 export async function deleteProcess(id: string): Promise<ActionState> {
   const userId = await getCurrentUserId();
+  const clientIp = resolveClientIp(await headers());
 
   let result: Awaited<ReturnType<typeof deleteProcessForUser>>;
 
   try {
-    result = await deleteProcessForUser(prisma, userId, id);
+    result = await deleteProcessForUser(prisma, userId, id, { ip: clientIp });
   } catch (error) {
     console.error("Erro ao excluir processo e documentos no banco:", error);
     return { success: false, message: "Não foi possível excluir o processo." };

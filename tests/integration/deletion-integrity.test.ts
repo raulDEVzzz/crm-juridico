@@ -26,6 +26,8 @@ import {
   testDb,
 } from "./helpers/db";
 
+const TEST_IP = "203.0.113.7";
+
 beforeEach(async () => {
   await resetTestData();
 });
@@ -46,6 +48,7 @@ test("falha no enqueue faz rollback da exclusão do processo", async () => {
 
   await assert.rejects(
     deleteProcessForUser(testDb, user.id, process.id, {
+      ip: TEST_IP,
       enqueue: async () => {
         throw new Error("enqueue indisponível");
       },
@@ -61,6 +64,11 @@ test("falha no enqueue faz rollback da exclusão do processo", async () => {
     }),
     0
   );
+  assert.equal(
+    await testDb.auditLog.count({ where: { entityId: process.id } }),
+    0,
+    "auditoria deve ser revertida junto com a exclusão"
+  );
 });
 
 test("exclusão bem-sucedida persiste o job de storage na mesma transação", async () => {
@@ -73,7 +81,7 @@ test("exclusão bem-sucedida persiste o job de storage na mesma transação", as
     processId: process.id,
   });
 
-  const result = await deleteProcessForUser(testDb, user.id, process.id);
+  const result = await deleteProcessForUser(testDb, user.id, process.id, { ip: TEST_IP });
 
   assert.equal(result.status, "deleted");
   assert.equal(await testDb.process.findUnique({ where: { id: process.id } }), null);
@@ -116,14 +124,14 @@ test("mover processo A para B mantém documento ao excluir A e remove ao excluir
     clientB.id
   );
 
-  const deleteA = await deleteClientForUser(testDb, user.id, clientA.id);
+  const deleteA = await deleteClientForUser(testDb, user.id, clientA.id, { ip: TEST_IP });
   assert.equal(deleteA.status, "deleted");
   assert.ok(
     await testDb.document.findUnique({ where: { id: document.id } }),
     "documento não pode ser apagado ao excluir o cliente antigo"
   );
 
-  const deleteB = await deleteClientForUser(testDb, user.id, clientB.id);
+  const deleteB = await deleteClientForUser(testDb, user.id, clientB.id, { ip: TEST_IP });
   assert.equal(deleteB.status, "deleted");
   assert.equal(
     await testDb.document.findUnique({ where: { id: document.id } }),
@@ -157,7 +165,7 @@ test("PRAZO pendente bloqueia processo; concluído permite exclusão em cascata"
     title: "Prazo avulso",
   });
 
-  const blocked = await deleteProcessForUser(testDb, user.id, process.id);
+  const blocked = await deleteProcessForUser(testDb, user.id, process.id, { ip: TEST_IP });
   assert.deepEqual(blocked, { status: "blocked", pendingDeadlines: 1 });
   assert.ok(await testDb.process.findUnique({ where: { id: process.id } }));
   assert.ok(
@@ -169,7 +177,7 @@ test("PRAZO pendente bloqueia processo; concluído permite exclusão em cascata"
     data: { status: "CONCLUIDO" },
   });
 
-  const deleted = await deleteProcessForUser(testDb, user.id, process.id);
+  const deleted = await deleteProcessForUser(testDb, user.id, process.id, { ip: TEST_IP });
   assert.equal(deleted.status, "deleted");
   assert.equal(await testDb.process.findUnique({ where: { id: process.id } }), null);
   assert.equal(
@@ -205,7 +213,7 @@ test("PRAZO pendente bloqueia cliente e conta prazos dos processos vinculados", 
     title: "Prazo avulso do cliente",
   });
 
-  const blocked = await deleteClientForUser(testDb, user.id, client.id);
+  const blocked = await deleteClientForUser(testDb, user.id, client.id, { ip: TEST_IP });
   assert.deepEqual(blocked, { status: "blocked", pendingDeadlines: 1 });
   assert.ok(await testDb.client.findUnique({ where: { id: client.id } }));
 
@@ -214,7 +222,7 @@ test("PRAZO pendente bloqueia cliente e conta prazos dos processos vinculados", 
     data: { status: "CONCLUIDO" },
   });
 
-  const deleted = await deleteClientForUser(testDb, user.id, client.id);
+  const deleted = await deleteClientForUser(testDb, user.id, client.id, { ip: TEST_IP });
   assert.equal(deleted.status, "deleted");
   assert.equal(await testDb.client.findUnique({ where: { id: client.id } }), null);
   assert.equal(await testDb.process.findUnique({ where: { id: process.id } }), null);
@@ -261,7 +269,7 @@ test("reabrir prazo durante a exclusão não permite perder o prazo pendente", a
 
   await updateApplied;
 
-  const deletion = deleteProcessForUser(testDb, user.id, process.id);
+  const deletion = deleteProcessForUser(testDb, user.id, process.id, { ip: TEST_IP });
 
   // Dá tempo para a exclusão ler a contagem antes de o prazo ser reaberto.
   await new Promise((resolve) => setTimeout(resolve, 500));
@@ -387,7 +395,8 @@ test("leitura e exclusão de documento respeitam o dono do processo", async () =
     testDb,
     intruder.id,
     process.id,
-    document.id
+    document.id,
+    { ip: TEST_IP }
   );
   assert.equal(denied.status, "process_not_found");
   assert.ok(
@@ -398,7 +407,8 @@ test("leitura e exclusão de documento respeitam o dono do processo", async () =
     testDb,
     owner.id,
     process.id,
-    document.id
+    document.id,
+    { ip: TEST_IP }
   );
   assert.equal(deleted.status, "deleted");
   assert.equal(
@@ -422,11 +432,13 @@ test("serviços de cliente e processo não expõem registros de outro usuário",
     null
   );
   assert.equal(
-    (await deleteClientForUser(testDb, intruder.id, client.id)).status,
+    (await deleteClientForUser(testDb, intruder.id, client.id, { ip: TEST_IP }))
+      .status,
     "not_found"
   );
   assert.equal(
-    (await deleteProcessForUser(testDb, intruder.id, process.id)).status,
+    (await deleteProcessForUser(testDb, intruder.id, process.id, { ip: TEST_IP }))
+      .status,
     "not_found"
   );
   assert.ok(await testDb.client.findUnique({ where: { id: client.id } }));

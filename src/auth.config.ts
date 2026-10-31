@@ -1,13 +1,22 @@
 import type { NextAuthConfig } from "next-auth";
 
+import {
+  SESSION_MAX_AGE_SECONDS,
+  SESSION_UPDATE_AGE_SECONDS,
+} from "@/lib/auth/session";
+
 export const authConfig = {
+  // AUTH_URL define a origem canônica dos redirects/callbacks. Mantemos
+  // trustHost porque a Vercel envia o host correto; sem AUTH_URL configurada,
+  // um header Host forjado poderia influenciar URLs absolutas do Auth.js.
   trustHost: true,
   pages: {
     signIn: "/login",
   },
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 7, // 7 dias
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    updateAge: SESSION_UPDATE_AGE_SECONDS,
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {

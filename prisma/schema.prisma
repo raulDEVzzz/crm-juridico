@@ -167,6 +167,21 @@ model Event {
   @@map("events")
 }
 
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  action    String
+  entity    String
+  entityId  String   @map("entity_id")
+  ip        String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
 model StorageDeletionJob {
   id          String    @id @default(cuid())
   key         String    @unique
