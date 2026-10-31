@@ -26,10 +26,15 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   private resolvePath(key: string): string {
-    const normalized = path.normalize(key).replace(/^(\.\.[/\\])+/, "");
-    const fullPath = path.join(this.basePath, normalized);
+    const fullPath = path.resolve(this.basePath, key);
+    const relative = path.relative(this.basePath, fullPath);
 
-    if (!fullPath.startsWith(this.basePath)) {
+    if (
+      relative === "" ||
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relative)
+    ) {
       throw new Error("Caminho de arquivo inválido.");
     }
 

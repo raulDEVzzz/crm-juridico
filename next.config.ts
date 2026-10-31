@@ -44,7 +44,10 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      // O multipart adiciona overhead ao arquivo. O limite do Server Action
+      // fica acima dos 10 MB validados em MAX_FILE_SIZE_BYTES para que um
+      // arquivo no limite não seja rejeitado por tamanho do corpo.
+      bodySizeLimit: "12mb",
     },
   },
   async headers() {

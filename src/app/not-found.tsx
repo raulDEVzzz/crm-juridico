@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="text-muted-foreground">
         O recurso que você procura não existe ou foi removido.
       </p>
-      <Link href="/" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
+      <Link href="/dashboard" className="text-sm font-medium text-primary underline-offset-4 hover:underline">
         Voltar ao dashboard
       </Link>
     </div>

@@ -4,6 +4,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { signIn, signOut } from "@/auth";
+import { getSafeCallbackUrl } from "@/lib/auth/callback-url";
 import { loginSchema } from "@/lib/validations/auth";
 
 export type LoginActionState = {
@@ -11,27 +12,6 @@ export type LoginActionState = {
   message: string;
   errors?: Record<string, string[]>;
 };
-
-const DEFAULT_CALLBACK_URL = "/dashboard";
-
-function getSafeCallbackUrl(value: FormDataEntryValue | null): string {
-  if (typeof value !== "string") return DEFAULT_CALLBACK_URL;
-
-  const callbackUrl = value.trim();
-
-  // Aceita somente caminhos absolutos internos. Barras invertidas também são
-  // rejeitadas porque alguns navegadores as normalizam como barras normais.
-  if (
-    callbackUrl === "/" ||
-    !callbackUrl.startsWith("/") ||
-    callbackUrl.startsWith("//") ||
-    callbackUrl.includes("\\")
-  ) {
-    return DEFAULT_CALLBACK_URL;
-  }
-
-  return callbackUrl;
-}
 
 export async function loginAction(
   _prevState: LoginActionState,

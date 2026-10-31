@@ -84,6 +84,21 @@ export function ClientForm({ client, mode }: ClientFormProps) {
           )}
         </div>
 
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="email">E-mail</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            defaultValue={client?.email ?? ""}
+            placeholder="cliente@exemplo.com"
+          />
+          <p className="text-xs text-muted-foreground">Opcional.</p>
+          {state.errors?.email && (
+            <p className="text-sm text-destructive">{state.errors.email[0]}</p>
+          )}
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="phone">Telefone *</Label>
           <Input

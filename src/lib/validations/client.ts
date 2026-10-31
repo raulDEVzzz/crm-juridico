@@ -7,8 +7,48 @@ function normalizeDigits(value: string): string {
   return value.replace(/\D/g, "");
 }
 
-function isValidBrazilianPhoneLength(value: string): boolean {
-  return value.length === 10 || value.length === 11;
+const VALID_BRAZILIAN_DDDS = new Set([
+  11, 12, 13, 14, 15, 16, 17, 18, 19,
+  21, 22, 24, 27, 28,
+  31, 32, 33, 34, 35, 37, 38,
+  41, 42, 43, 44, 45, 46, 47, 48, 49,
+  51, 53, 54, 55,
+  61, 62, 63, 64, 65, 66, 67, 68, 69,
+  71, 73, 74, 75, 77, 79,
+  81, 82, 83, 84, 85, 86, 87, 88, 89,
+  91, 92, 93, 94, 95, 96, 97, 98, 99,
+]);
+
+/**
+ * Valida telefone brasileiro já normalizado (somente dígitos).
+ * Retorna a mensagem de erro em português ou null quando válido.
+ */
+export function getBrazilianPhoneValidationError(
+  value: string,
+  label: "Telefone" | "WhatsApp"
+): string | null {
+  if (!/^\d{10,11}$/.test(value)) {
+    return `${label} deve ter 10 ou 11 dígitos.`;
+  }
+
+  if (/^(\d)\1+$/.test(value)) {
+    return `${label} não pode ter todos os dígitos iguais.`;
+  }
+
+  const ddd = Number(value.slice(0, 2));
+  if (!VALID_BRAZILIAN_DDDS.has(ddd)) {
+    return `DDD do ${label === "Telefone" ? "telefone" : "WhatsApp"} inválido.`;
+  }
+
+  if (value.length === 11) {
+    if (value[2] !== "9") {
+      return `${label} de celular deve começar com 9 após o DDD.`;
+    }
+  } else if (!/[2-5]/.test(value[2])) {
+    return `${label} fixo deve começar com 2, 3, 4 ou 5 após o DDD.`;
+  }
+
+  return null;
 }
 
 export function isValidCpf(value: string): boolean {
@@ -67,6 +107,14 @@ export const clientFormSchema = z
       .max(200, "Nome muito longo"),
     personType: personTypeEnum,
     document: z.string().transform(normalizeDigits),
+    email: z
+      .string()
+      .optional()
+      .transform((value) => {
+        const trimmed = value?.trim();
+        return trimmed ? trimmed : undefined;
+      })
+      .pipe(z.string().email("E-mail inválido").optional()),
     phone: z.string().transform(normalizeDigits),
     whatsapp: z
       .string()
@@ -116,23 +164,30 @@ export const clientFormSchema = z
       });
     }
 
-    if (!isValidBrazilianPhoneLength(data.phone)) {
+    const phoneError = getBrazilianPhoneValidationError(
+      data.phone,
+      "Telefone"
+    );
+    if (phoneError) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["phone"],
-        message: "Telefone deve ter 10 ou 11 dígitos.",
+        message: phoneError,
       });
     }
 
-    if (
-      data.whatsapp !== undefined &&
-      !isValidBrazilianPhoneLength(data.whatsapp)
-    ) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["whatsapp"],
-        message: "WhatsApp deve ter 10 ou 11 dígitos.",
-      });
+    if (data.whatsapp !== undefined) {
+      const whatsappError = getBrazilianPhoneValidationError(
+        data.whatsapp,
+        "WhatsApp"
+      );
+      if (whatsappError) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["whatsapp"],
+          message: whatsappError,
+        });
+      }
     }
 
     if (data.birthDate) {

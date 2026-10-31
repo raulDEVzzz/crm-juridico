@@ -19,6 +19,7 @@ import {
   formatCnj,
   LEGAL_AREA_LABELS,
   PROCESS_STATUS_LABELS,
+  stripCnj,
 } from "@/lib/validations/process";
 
 const initialState: ActionState = {
@@ -40,18 +41,44 @@ interface ProcessFormProps {
   mode: "create" | "edit";
 }
 
+interface ProcessFormValues {
+  clientId: string;
+  processNumber: string;
+  court: string;
+  area: string;
+  status: string;
+  value: string;
+  notes: string;
+}
+
 export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
   const router = useRouter();
   const action =
     mode === "create" ? createProcess : updateProcess.bind(null, process!.id);
   const [state, formAction, isPending] = useActionState(action, initialState);
-  const [processNumber, setProcessNumber] = useState(
-    process?.processNumber ?? ""
-  );
+  const [values, setValues] = useState<ProcessFormValues>({
+    clientId: process?.clientId ?? "",
+    processNumber: process?.processNumber ?? "",
+    court: process?.court ?? "",
+    area: process?.area ?? "CIVEL",
+    status: process?.status ?? "ATIVO",
+    value: process?.value != null ? String(process.value) : "",
+    notes: process?.notes ?? "",
+  });
 
-  function handleCnjChange(value: string) {
-    setProcessNumber(formatCnj(value));
+  function updateValues(patch: Partial<ProcessFormValues>) {
+    setValues((current) => ({ ...current, ...patch }));
   }
+
+  // O React 19 reseta o formulário antes de executar a action. Como os campos
+  // são controlados, os valores digitados sobrevivem e a confirmação do CNJ
+  // duplicado salva exatamente o que o usuário preencheu. O aviso só continua
+  // visível enquanto cliente e CNJ forem os mesmos que o geraram.
+  const warningIsCurrent =
+    !!state.warning?.duplicateCnj &&
+    state.warning.duplicateCnj.clientId === values.clientId &&
+    stripCnj(state.warning.duplicateCnj.processNumber) ===
+      stripCnj(values.processNumber);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -61,7 +88,10 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <NativeSelect
             id="clientId"
             name="clientId"
-            defaultValue={process?.clientId ?? ""}
+            value={values.clientId}
+            onChange={(event) =>
+              updateValues({ clientId: event.target.value })
+            }
             required
           >
             <option value="" disabled>
@@ -83,8 +113,10 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <Input
             id="processNumber"
             name="processNumber"
-            value={processNumber}
-            onChange={(e) => handleCnjChange(e.target.value)}
+            value={values.processNumber}
+            onChange={(event) =>
+              updateValues({ processNumber: formatCnj(event.target.value) })
+            }
             placeholder="0000000-00.0000.0.00.0000"
             maxLength={25}
             required
@@ -104,7 +136,10 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <Input
             id="court"
             name="court"
-            defaultValue={process?.court ?? ""}
+            value={values.court}
+            onChange={(event) =>
+              updateValues({ court: event.target.value })
+            }
             placeholder="Ex: 1ª Vara Cível de São Paulo"
             required
           />
@@ -118,7 +153,8 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <NativeSelect
             id="area"
             name="area"
-            defaultValue={process?.area ?? "CIVEL"}
+            value={values.area}
+            onChange={(event) => updateValues({ area: event.target.value })}
             required
           >
             {Object.entries(LEGAL_AREA_LABELS).map(([value, label]) => (
@@ -137,7 +173,8 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <NativeSelect
             id="status"
             name="status"
-            defaultValue={process?.status ?? "ATIVO"}
+            value={values.status}
+            onChange={(event) => updateValues({ status: event.target.value })}
             required
           >
             {Object.entries(PROCESS_STATUS_LABELS).map(([value, label]) => (
@@ -155,7 +192,8 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
             name="value"
             type="text"
             inputMode="decimal"
-            defaultValue={process?.value ?? ""}
+            value={values.value}
+            onChange={(event) => updateValues({ value: event.target.value })}
             placeholder="0,00"
           />
           {state.errors?.value && (
@@ -168,12 +206,32 @@ export function ProcessForm({ clients, process, mode }: ProcessFormProps) {
           <Textarea
             id="notes"
             name="notes"
-            defaultValue={process?.notes ?? ""}
+            value={values.notes}
+            onChange={(event) => updateValues({ notes: event.target.value })}
             placeholder="Informações adicionais sobre o processo..."
             rows={4}
           />
         </div>
       </div>
+
+      {state.warning && warningIsCurrent && (
+        <div
+          role="alert"
+          className="rounded-md border border-amber-500/60 bg-amber-50 p-4 text-sm text-amber-950"
+        >
+          <p className="font-medium">{state.warning.message}</p>
+          <label className="mt-3 flex items-start gap-2">
+            <input
+              type="checkbox"
+              name="confirmDuplicateCnj"
+              value="on"
+              required
+              className="mt-0.5"
+            />
+            <span>Salvar mesmo assim</span>
+          </label>
+        </div>
+      )}
 
       {state.message && !state.success && (
         <p className="text-sm text-destructive">{state.message}</p>

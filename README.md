@@ -100,6 +100,7 @@ Acesse [http://localhost:3000](http://localhost:3000).
 - **Limpeza de storage** — Drena fila de exclusão de arquivos pendentes (até 50 por execução)
 - **Purga de jobs concluídos** — Remove registros de exclusão já processados com mais de 24h
 - **Purga de tentativas de login** — Remove registros expirados de rate limiting com mais de 24h
+- **Retenção de auditoria** — Remove registros de `audit_logs` com mais de 730 dias
 - Execução automática diária às 03:00 UTC via **Vercel Cron**
 
 ## Rotas

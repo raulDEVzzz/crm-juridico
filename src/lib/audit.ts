@@ -16,6 +16,11 @@ export const AUDIT_ENTITIES = {
   USER: "User",
 } as const;
 
+/** Retenção dos registros de auditoria, em dias. */
+export const AUDIT_RETENTION_DAYS = 730;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 export interface AuditLogEntry {
   userId: string;
   action: string;
@@ -48,4 +53,20 @@ export async function recordAuditLogSafely(
   } catch (error) {
     console.error("Falha ao registrar auditoria:", error);
   }
+}
+
+/**
+ * Remove registros de auditoria mais antigos que AUDIT_RETENTION_DAYS.
+ * Retorna a quantidade de registros removidos.
+ */
+export async function purgeExpiredAuditLogs(
+  db: Pick<PrismaClient, "auditLog"> = prisma,
+  now: Date = new Date()
+): Promise<number> {
+  const cutoff = new Date(now.getTime() - AUDIT_RETENTION_DAYS * DAY_MS);
+  const result = await db.auditLog.deleteMany({
+    where: { createdAt: { lt: cutoff } },
+  });
+
+  return result.count;
 }
