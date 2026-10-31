@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { purgeExpiredAuditLogs } from "@/lib/audit";
 import { purgeExpiredAttempts } from "@/lib/rate-limit";
 import {
   MAX_ATTEMPTS,
@@ -31,12 +32,16 @@ export async function GET() {
     // 3. Purga tentativas de login expiradas com mais de 24 horas
     const purgedAttempts = await purgeExpiredAttempts(24);
 
+    // 4. Purga registros de auditoria além da retenção de 730 dias
+    const purgedAuditLogs = await purgeExpiredAuditLogs();
+
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
       storage: storageResult,
       purgedStorageJobs,
       purgedLoginAttempts: purgedAttempts,
+      purgedAuditLogs,
     });
   } catch (error) {
     console.error("Erro ao executar cron de limpeza:", error);
