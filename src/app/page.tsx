@@ -118,11 +118,17 @@ const faqs = [
   },
 ];
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+function Eyebrow({ children, onLight = false }: { children: React.ReactNode; onLight?: boolean }) {
   return (
     <div className="mb-5 inline-flex items-center gap-3">
-      <span className="h-px w-8 bg-gold/60" />
-      <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">{children}</span>
+      <span className={`h-px w-8 ${onLight ? "bg-[#7C5B1D]/50" : "bg-gold/60"}`} />
+      <span
+        className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${
+          onLight ? "text-[#7C5B1D]" : "text-gold"
+        }`}
+      >
+        {children}
+      </span>
     </div>
   );
 }
@@ -375,10 +381,13 @@ export default function LandingPage() {
         </section>
 
         {/* Escritório */}
-        <section id="escritorio" className="scroll-mt-20 border-y border-white/10 bg-[#070C18] py-20 sm:py-28">
+        <section
+          id="escritorio"
+          className="scroll-mt-20 border-y border-[#0B1220]/10 bg-[#F4EFE6] py-20 text-[#0B1220] sm:py-28"
+        >
           <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-2">
             <div className="relative order-2 lg:order-1">
-              <div className="glass rounded-[1.75rem] p-2">
+              <div className="rounded-[1.75rem] border border-[#0B1220]/10 bg-white p-2 shadow-[0_35px_70px_-35px_rgba(11,18,32,0.45)]">
                 <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.35rem]">
                   <Image
                     src="/erick-chair.jpg"
@@ -388,24 +397,25 @@ export default function LandingPage() {
                     sizes="(min-width: 1024px) 50vw, 100vw"
                     className="object-cover object-top"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220]/25 via-transparent to-transparent" />
                 </div>
               </div>
-              <div className="glass absolute -bottom-6 right-4 hidden rounded-2xl px-6 py-4 sm:block border border-white/10">
-                <p className="font-serif text-3xl text-gold">+300</p>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Clientes atendidos</p>
+              <div className="absolute -bottom-6 right-4 hidden rounded-2xl border border-[#0B1220]/10 bg-white px-6 py-4 shadow-xl shadow-[#0B1220]/10 sm:block">
+                <p className="font-serif text-3xl text-[#7C5B1D]">+300</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[#5A6270]">Clientes atendidos</p>
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <Eyebrow>O escritório</Eyebrow>
-              <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
+              <Eyebrow onLight>O escritório</Eyebrow>
+              <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-[#0B1220]">
                 Soluções construídas com ética, técnica apurada e foco no resultado.
               </h2>
-              <p className="mt-6 text-base sm:text-lg leading-relaxed text-slate-300">
+              <p className="mt-6 text-base sm:text-lg leading-relaxed text-[#3E4757]">
                 Com estrutura moderna e atuação consultiva e contenciosa, unimos a precisão do Direito ao dinamismo digital, garantindo que cada cliente tenha uma defesa robusta e um plano de ação sob medida.
               </p>
-              <figure className="mt-8 border-l-2 border-gold/60 pl-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold">Compromisso</p>
-                <blockquote className="mt-2 font-serif text-xl sm:text-2xl italic leading-snug text-slate-200">
+              <figure className="mt-8 border-l-2 border-[#7C5B1D]/45 pl-6">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#7C5B1D]">Compromisso</p>
+                <blockquote className="mt-2 font-serif text-xl sm:text-2xl italic leading-snug text-[#1B2433]">
                   “Defesa combativa, transparência contínua e foco na melhor solução para o cliente.”
                 </blockquote>
               </figure>
