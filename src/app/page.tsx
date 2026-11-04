@@ -305,15 +305,21 @@ export default function LandingPage() {
                   Defesa técnica focada na solução do conflito com agilidade, ética e contato direto com o advogado responsável pelo seu processo.
                 </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
+              <div className="grid gap-x-10 border-b border-white/10 sm:grid-cols-2 lg:col-span-8">
                 {values.map((v) => (
-                  <div key={v.n} className="glass card-hover group rounded-2xl p-7">
-                    <div className="flex items-center justify-between">
-                      <span className="font-serif text-3xl text-slate-500 transition-colors group-hover:text-white">{v.n}</span>
-                      <span className="h-px w-12 bg-white/15 transition-all group-hover:w-20 group-hover:bg-white/40" />
+                  <div
+                    key={v.n}
+                    className="group border-t border-white/10 py-6 first:border-t-0 sm:first:border-t"
+                  >
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-serif text-lg text-slate-400 transition-colors group-hover:text-white">
+                        {v.n}
+                      </span>
+                      <div>
+                        <h3 className="font-serif text-2xl text-white">{v.t}</h3>
+                        <p className="mt-2 text-[15px] leading-relaxed text-slate-200">{v.d}</p>
+                      </div>
                     </div>
-                    <h3 className="mt-6 text-lg font-semibold text-white">{v.t}</h3>
-                    <p className="mt-2 text-[15px] leading-relaxed text-slate-200">{v.d}</p>
                   </div>
                 ))}
               </div>
