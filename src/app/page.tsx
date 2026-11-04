@@ -121,10 +121,10 @@ const faqs = [
 function Eyebrow({ children, onLight = false }: { children: React.ReactNode; onLight?: boolean }) {
   return (
     <div className="mb-5 inline-flex items-center gap-3">
-      <span className={`h-px w-8 ${onLight ? "bg-[#7C5B1D]/50" : "bg-gold/60"}`} />
+      <span className={`h-px w-8 ${onLight ? "bg-[#0B1220]/20" : "bg-white/20"}`} />
       <span
         className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${
-          onLight ? "text-[#7C5B1D]" : "text-gold"
+          onLight ? "text-[#5A6270]" : "text-slate-300"
         }`}
       >
         {children}
@@ -161,7 +161,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#090E1A]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Erick do Carmo Advogados">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gold/30 bg-gold-soft p-0.5 shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-white/[0.03] p-0.5 shadow-sm">
               <Image src="/logo.jpg" alt="Logo EC" width={40} height={40} className="object-cover rounded-md" />
             </div>
             <div className="min-w-0 leading-tight">
@@ -181,7 +181,7 @@ export default function LandingPage() {
               ["#faq", "Dúvidas"],
               ["#contato", "Contato"],
             ].map(([href, label]) => (
-              <a key={href} href={href} className="transition-colors hover:text-gold">
+              <a key={href} href={href} className="transition-colors hover:text-white">
                 {label}
               </a>
             ))}
@@ -192,7 +192,7 @@ export default function LandingPage() {
               href="/login"
               className="btn-ghost inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium"
             >
-              <Lock className="h-3 w-3 text-gold" />
+              <Lock className="h-3 w-3 text-slate-400" />
               <span className="hidden sm:inline">Área Restrita</span>
             </Link>
             <a
@@ -219,7 +219,7 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-12 sm:px-8 lg:grid-cols-12 lg:pb-28 lg:pt-20">
             <div className="rise lg:col-span-7">
               <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium tracking-wide text-slate-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
                 Assessoria Jurídica de Excelência • OAB/SP 465.833
               </div>
               <h1 className="font-serif text-[2.5rem] font-medium leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-[4.75rem]">
@@ -248,7 +248,7 @@ export default function LandingPage() {
             </div>
 
             <div className="rise relative mx-auto w-full max-w-sm lg:col-span-5 lg:ml-auto" style={{ animationDelay: "150ms" }}>
-              <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gold/15 blur-3xl" />
+              <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-white/5 blur-3xl" />
               <div className="glass rounded-[1.75rem] p-2">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem]">
                   <Image
@@ -263,7 +263,7 @@ export default function LandingPage() {
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#070A12] to-transparent" />
                   <div className="absolute inset-x-4 bottom-4 glass rounded-2xl px-4 py-3">
                     <p className="font-serif text-lg text-white">Dr. Erick do Carmo</p>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-gold font-medium">Advogado • OAB/SP 465.833</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-300 font-medium">Advogado • OAB/SP 465.833</p>
                   </div>
                 </div>
               </div>
@@ -310,8 +310,8 @@ export default function LandingPage() {
                 {values.map((v) => (
                   <div key={v.n} className="glass card-hover group rounded-2xl p-7">
                     <div className="flex items-center justify-between">
-                      <span className="font-serif text-3xl text-gold/70 transition-colors group-hover:text-gold">{v.n}</span>
-                      <span className="h-px w-12 bg-white/15 transition-all group-hover:w-20 group-hover:bg-gold/60" />
+                      <span className="font-serif text-3xl text-slate-500 transition-colors group-hover:text-white">{v.n}</span>
+                      <span className="h-px w-12 bg-white/15 transition-all group-hover:w-20 group-hover:bg-white/40" />
                     </div>
                     <h3 className="mt-6 text-lg font-semibold text-white">{v.t}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-slate-300">{v.d}</p>
@@ -348,12 +348,12 @@ export default function LandingPage() {
                   {big && (
                     <PropertyLines className="pointer-events-none absolute -right-10 bottom-0 h-[115%] w-[72%] text-slate-200 opacity-[0.12]" />
                   )}
-                  {big && <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl pointer-events-none" />}
+                  {big && <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/[0.03] blur-3xl pointer-events-none" />}
                   <div className="relative flex items-start justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gold/25 bg-gold-soft text-gold">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 transition-colors group-hover:text-white">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <ArrowUpRight className="h-5 w-5 text-slate-400 opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold group-hover:opacity-100" />
+                    <ArrowUpRight className="h-5 w-5 text-slate-400 opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white group-hover:opacity-100" />
                   </div>
                   <div className={`relative mt-8 ${big ? "max-w-[92%] sm:max-w-lg" : ""}`}>
                     <h3 className={`font-serif text-white ${big ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`}>{t}</h3>
@@ -437,13 +437,13 @@ export default function LandingPage() {
               {faqs.map((f, i) => (
                 <details
                   key={f.q}
-                  className="glass group rounded-2xl px-6 py-5 transition-colors open:border-gold/40 sm:px-8 border border-white/10"
+                  className="glass group rounded-2xl px-6 py-5 transition-colors open:border-white/25 sm:px-8 border border-white/10"
                   open={i === 0}
                 >
                   <summary className="flex cursor-pointer list-none items-center gap-5 [&::-webkit-details-marker]:hidden">
-                    <span className="font-serif text-xl text-gold/70">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="font-serif text-xl text-slate-500">{String(i + 1).padStart(2, "0")}</span>
                     <span className="flex-1 text-base font-medium text-white sm:text-lg">{f.q}</span>
-                    <Plus className="h-5 w-5 shrink-0 text-gold transition-transform duration-300 group-open:rotate-45" />
+                    <Plus className="h-5 w-5 shrink-0 text-slate-300 transition-transform duration-300 group-open:rotate-45" />
                   </summary>
                   <p className="mt-4 pl-10 text-sm leading-relaxed text-slate-300 sm:text-base">{f.a}</p>
                 </details>
@@ -477,7 +477,7 @@ export default function LandingPage() {
                         key={l as string}
                         className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#070A12]/60 px-3.5 py-1.5 text-xs text-slate-300"
                       >
-                        <Ic className="h-3.5 w-3.5 text-gold" /> {l as string}
+                        <Ic className="h-3.5 w-3.5 text-slate-300" /> {l as string}
                       </span>
                     );
                   })}
@@ -511,7 +511,7 @@ export default function LandingPage() {
                     const Ic = I as typeof Clock;
                     const inner = (
                       <>
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] text-slate-300">
                           <Ic className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
@@ -547,7 +547,7 @@ export default function LandingPage() {
                       rel="noopener noreferrer"
                       className="btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
                     >
-                      <Icon className="h-3.5 w-3.5 text-gold" /> {label}
+                      <Icon className="h-3.5 w-3.5 text-slate-300" /> {label}
                     </a>
                   ))}
                 </div>
@@ -573,7 +573,7 @@ export default function LandingPage() {
                 href="https://wa.me/5513991666744?text=Ol%C3%A1%2C%20Raul!%20Vi%20o%20site%20que%20voc%C3%AA%20desenvolveu%20para%20o%20Dr.%20Erick%20e%20gostaria%20de%20um%20or%C3%A7amento."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gold hover:underline font-medium"
+                className="text-slate-300 hover:text-white hover:underline font-medium"
               >
                 Raul Almeida
               </a>
@@ -583,7 +583,7 @@ export default function LandingPage() {
             href="/login"
             className="btn-ghost inline-flex w-fit items-center gap-1.5 rounded-full px-4 py-2 md:justify-self-end text-xs"
           >
-            <Lock className="h-3 w-3 text-gold" /> Acesso Restrito
+            <Lock className="h-3 w-3 text-slate-400" /> Acesso Restrito
           </Link>
         </div>
       </footer>
