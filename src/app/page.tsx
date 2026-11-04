@@ -187,13 +187,12 @@ export default function LandingPage() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-3 sm:gap-5">
             <Link
               href="/login"
-              className="btn-ghost inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium"
+              className="hidden text-[13px] font-medium text-slate-400 transition-colors hover:text-white sm:inline-flex"
             >
-              <Lock className="h-3 w-3 text-slate-400" />
-              <span className="hidden sm:inline">Área Restrita</span>
+              Área Restrita
             </Link>
             <a
               href={whatsappUrl}

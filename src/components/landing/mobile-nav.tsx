@@ -109,7 +109,7 @@ export function MobileNav() {
                   className="group flex items-center justify-between rounded-xl px-3.5 py-3 text-left transition-colors hover:bg-slate-800/80 active:bg-slate-800"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-blue-400 border border-slate-700/60 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-300 border border-slate-700/60 group-hover:bg-white/10 group-hover:text-white transition-colors">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div>
@@ -157,7 +157,7 @@ export function MobileNav() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={closeMenu}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/60 transition-colors hover:bg-blue-500"
+                className="btn-gold flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3.5 text-sm font-semibold"
               >
                 <MessageCircle className="h-4 w-4" />
                 Agendar Consulta no WhatsApp
