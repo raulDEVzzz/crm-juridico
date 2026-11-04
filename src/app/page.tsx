@@ -168,13 +168,13 @@ export default function LandingPage() {
               <span className="block truncate text-xs font-semibold tracking-[0.12em] sm:text-[15px] text-white uppercase">
                 ERICK DO CARMO
               </span>
-              <span className="block truncate text-[9px] uppercase tracking-[0.22em] text-slate-400 sm:text-[10px]">
+              <span className="block truncate text-[10px] uppercase tracking-[0.22em] text-slate-300 sm:text-[11px]">
                 Advogados • OAB/SP 465.833
               </span>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 lg:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-200 lg:flex">
             {[
               ["#atuacao", "Áreas de Atuação"],
               ["#escritorio", "O Escritório"],
@@ -218,14 +218,14 @@ export default function LandingPage() {
           <div className="grid-lines absolute inset-0 -z-10" />
           <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-12 sm:px-8 lg:grid-cols-12 lg:pb-28 lg:pt-20">
             <div className="rise lg:col-span-7">
-              <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium tracking-wide text-slate-300">
+              <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium tracking-normal text-slate-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
                 Assessoria Jurídica de Excelência • OAB/SP 465.833
               </div>
               <h1 className="font-serif text-[2.5rem] font-medium leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-[4.75rem]">
                 <em className="text-gold-gradient font-normal not-italic">Segurança jurídica</em> e firmeza na defesa dos seus interesses.
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">
                 Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -263,7 +263,7 @@ export default function LandingPage() {
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#070A12] to-transparent" />
                   <div className="absolute inset-x-4 bottom-4 glass rounded-2xl px-4 py-3">
                     <p className="font-serif text-lg text-white">Dr. Erick do Carmo</p>
-                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-300 font-medium">Advogado • OAB/SP 465.833</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-300 font-medium">Advogado • OAB/SP 465.833</p>
                   </div>
                 </div>
               </div>
@@ -286,7 +286,7 @@ export default function LandingPage() {
                   } ${i === 2 ? "md:border-l md:border-white/10" : ""}`}
                 >
                   <p className="font-serif text-3xl sm:text-4xl text-white">{v}</p>
-                  <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">{l}</p>
+                  <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 sm:text-xs">{l}</p>
                 </div>
               ))}
             </div>
@@ -302,7 +302,7 @@ export default function LandingPage() {
                 <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
                   Uma nova postura na prestação de serviços jurídicos.
                 </h2>
-                <p className="mt-5 text-sm sm:text-base leading-relaxed text-slate-400">
+                <p className="mt-5 text-[15px] sm:text-base leading-relaxed text-slate-300">
                   Defesa técnica focada na solução do conflito com agilidade, ética e contato direto com o advogado responsável pelo seu processo.
                 </p>
               </div>
@@ -314,7 +314,7 @@ export default function LandingPage() {
                       <span className="h-px w-12 bg-white/15 transition-all group-hover:w-20 group-hover:bg-white/40" />
                     </div>
                     <h3 className="mt-6 text-lg font-semibold text-white">{v.t}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-300">{v.d}</p>
+                    <p className="mt-2 text-[15px] leading-relaxed text-slate-200">{v.d}</p>
                   </div>
                 ))}
               </div>
@@ -330,7 +330,7 @@ export default function LandingPage() {
                 <Eyebrow>Prática jurídica</Eyebrow>
                 <h2 className="font-serif text-3xl sm:text-5xl text-white">Áreas de Atuação</h2>
               </div>
-              <p className="max-w-md text-sm sm:text-base text-slate-400">
+              <p className="max-w-md text-[15px] sm:text-base text-slate-300">
                 Soluções jurídicas com visão multidisciplinar para prevenir passivos, proteger seu patrimônio e garantir vitórias consistentes.
               </p>
             </div>
@@ -357,16 +357,16 @@ export default function LandingPage() {
                   </div>
                   <div className={`relative mt-8 ${big ? "max-w-[92%] sm:max-w-lg" : ""}`}>
                     <h3 className={`font-serif text-white ${big ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`}>{t}</h3>
-                    <p className={`mt-3 leading-relaxed text-slate-300 ${big ? "text-sm sm:text-base" : "text-xs sm:text-sm"}`}>{d}</p>
+                    <p className={`mt-3 leading-relaxed text-slate-200 ${big ? "text-[15px] sm:text-base" : "text-sm"}`}>{d}</p>
                     {big && (
                       <div className="mt-6 border-t border-white/10 pt-5">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
                           Serviços frequentes
                         </p>
                         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                           {imobiliarioServices.map((service) => (
-                            <li key={service} className="flex items-center gap-2 text-sm text-slate-300">
-                              <Check className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                            <li key={service} className="flex items-center gap-2 text-[15px] text-slate-200">
+                              <Check className="h-3.5 w-3.5 shrink-0 text-slate-300" />
                               {service}
                             </li>
                           ))}
@@ -402,7 +402,7 @@ export default function LandingPage() {
               </div>
               <div className="absolute -bottom-6 right-4 hidden rounded-2xl border border-[#0B1220]/10 bg-white px-6 py-4 shadow-xl shadow-[#0B1220]/10 sm:block">
                 <p className="font-serif text-3xl text-[#7C5B1D]">+300</p>
-                <p className="text-[11px] uppercase tracking-[0.18em] text-[#5A6270]">Clientes atendidos</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-[#5A6270]">Clientes atendidos</p>
               </div>
             </div>
             <div className="order-1 lg:order-2">
@@ -410,11 +410,11 @@ export default function LandingPage() {
               <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-[#0B1220]">
                 Soluções construídas com ética, técnica apurada e foco no resultado.
               </h2>
-              <p className="mt-6 text-base sm:text-lg leading-relaxed text-[#3E4757]">
+              <p className="mt-6 text-base sm:text-lg leading-relaxed text-[#334052]">
                 Com estrutura moderna e atuação consultiva e contenciosa, unimos a precisão do Direito ao dinamismo digital, garantindo que cada cliente tenha uma defesa robusta e um plano de ação sob medida.
               </p>
               <figure className="mt-8 border-l-2 border-[#7C5B1D]/45 pl-6">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#7C5B1D]">Compromisso</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#7C5B1D]">Compromisso</p>
                 <blockquote className="mt-2 font-serif text-xl sm:text-2xl italic leading-snug text-[#1B2433]">
                   “Defesa combativa, transparência contínua e foco na melhor solução para o cliente.”
                 </blockquote>
@@ -429,7 +429,7 @@ export default function LandingPage() {
             <div className="lg:col-span-4">
               <Eyebrow>Esclarecimentos</Eyebrow>
               <h2 className="font-serif text-3xl sm:text-5xl text-white">Perguntas Frequentes</h2>
-              <p className="mt-5 text-sm sm:text-base text-slate-400">
+              <p className="mt-5 text-[15px] sm:text-base text-slate-300">
                 Tire suas principais dúvidas sobre o modelo de atuação e o início do atendimento.
               </p>
             </div>
@@ -441,11 +441,11 @@ export default function LandingPage() {
                   open={i === 0}
                 >
                   <summary className="flex cursor-pointer list-none items-center gap-5 [&::-webkit-details-marker]:hidden">
-                    <span className="font-serif text-xl text-slate-500">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="font-serif text-xl text-slate-400">{String(i + 1).padStart(2, "0")}</span>
                     <span className="flex-1 text-base font-medium text-white sm:text-lg">{f.q}</span>
                     <Plus className="h-5 w-5 shrink-0 text-slate-300 transition-transform duration-300 group-open:rotate-45" />
                   </summary>
-                  <p className="mt-4 pl-10 text-sm leading-relaxed text-slate-300 sm:text-base">{f.a}</p>
+                  <p className="mt-4 pl-10 text-[15px] leading-relaxed text-slate-200 sm:text-base">{f.a}</p>
                 </details>
               ))}
             </div>
@@ -462,7 +462,7 @@ export default function LandingPage() {
                 <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
                   Vamos analisar o seu caso?
                 </h2>
-                <p className="mt-5 max-w-md text-base sm:text-lg text-slate-300">
+                <p className="mt-5 max-w-md text-base sm:text-lg text-slate-200">
                   Conte com uma análise inicial atenta para entender o cenário, os riscos e os caminhos jurídicos possíveis.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-2">
@@ -475,7 +475,7 @@ export default function LandingPage() {
                     return (
                       <span
                         key={l as string}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#070A12]/60 px-3.5 py-1.5 text-xs text-slate-300"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#070A12]/60 px-3.5 py-1.5 text-[13px] text-slate-200"
                       >
                         <Ic className="h-3.5 w-3.5 text-slate-300" /> {l as string}
                       </span>
@@ -515,7 +515,7 @@ export default function LandingPage() {
                           <Ic className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{k as string}</p>
+                          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-300">{k as string}</p>
                           <p className="break-words text-sm font-medium text-white sm:text-base">{v as string}</p>
                         </div>
                       </>
@@ -545,7 +545,7 @@ export default function LandingPage() {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
+                      className="btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium"
                     >
                       <Icon className="h-3.5 w-3.5 text-slate-300" /> {label}
                     </a>
@@ -559,12 +559,12 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 bg-[#05080F]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 text-xs text-slate-400 sm:px-8 md:grid-cols-3 md:items-center">
+        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 text-sm text-slate-300 sm:px-8 md:grid-cols-3 md:items-center">
           <div>
             <p className="text-sm font-semibold tracking-[0.12em] text-white">ERICK DO CARMO ADVOGADOS</p>
-            <p className="mt-1 uppercase tracking-[0.2em] text-slate-400">Assessoria Jurídica • OAB/SP 465.833</p>
+            <p className="mt-1 uppercase tracking-[0.2em] text-slate-300">Assessoria Jurídica • OAB/SP 465.833</p>
           </div>
-          <div className="space-y-1.5 md:text-center text-slate-400">
+          <div className="space-y-1.5 md:text-center text-slate-300">
             <p>Informativo profissional em conformidade com o Código de Ética e Disciplina da OAB e o Provimento nº 205/2021.</p>
             <p>© {new Date().getFullYear()} Erick do Carmo Advogados. Todos os direitos reservados.</p>
             <p>
@@ -581,7 +581,7 @@ export default function LandingPage() {
           </div>
           <Link
             href="/login"
-            className="btn-ghost inline-flex w-fit items-center gap-1.5 rounded-full px-4 py-2 md:justify-self-end text-xs"
+            className="btn-ghost inline-flex w-fit items-center gap-1.5 rounded-full px-4 py-2 md:justify-self-end text-[13px]"
           >
             <Lock className="h-3 w-3 text-slate-400" /> Acesso Restrito
           </Link>

@@ -98,7 +98,7 @@ export function MobileNav() {
             className="fixed inset-x-0 top-16 bottom-0 z-[100] flex flex-col bg-[#070D1B] border-t border-slate-800/80 animate-in fade-in-0 slide-in-from-top-2 duration-200 h-[calc(100dvh-4rem)] sm:top-20 sm:h-[calc(100dvh-5rem)] md:hidden"
           >
             <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-5">
-              <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <p className="px-3 pb-1 text-xs font-bold uppercase tracking-wider text-slate-300">
                 Navegação
               </p>
               {navLinks.map(({ href, label, description, icon: Icon }) => (
@@ -116,7 +116,7 @@ export function MobileNav() {
                       <span className="block text-sm font-semibold text-white">
                         {label}
                       </span>
-                      <span className="block text-xs text-slate-400">
+                      <span className="block text-[13px] text-slate-300">
                         {description}
                       </span>
                     </div>
@@ -141,7 +141,7 @@ export function MobileNav() {
                     <span className="block text-sm font-semibold text-slate-200">
                       Área Restrita
                     </span>
-                    <span className="block text-xs text-slate-400">
+                    <span className="block text-[13px] text-slate-300">
                       Acesso exclusivo de clientes
                     </span>
                   </div>
@@ -162,7 +162,7 @@ export function MobileNav() {
                 <MessageCircle className="h-4 w-4" />
                 Agendar Consulta no WhatsApp
               </a>
-              <p className="mt-2 text-center text-[11px] text-slate-400">
+              <p className="mt-2 text-center text-xs text-slate-300">
                 Atendimento Segunda a Sexta, 09h às 18h
               </p>
             </div>
