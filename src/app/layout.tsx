@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/erick-photo.jpg",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Dr. Erick do Carmo - ERICK DO CARMO ADVOGADOS",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     title: "ERICK DO CARMO ADVOGADOS | Advocacia em Praia Grande e Litoral de SP",
     description:
       "Advocacia estratégica e assessoria jurídica integral com atendimento em todo o Brasil. Soluções sob medida para você e sua empresa.",
-    images: ["/erick-photo.jpg"],
+    images: ["/og-image.jpg"],
   },
 };
 
