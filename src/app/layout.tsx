@@ -34,10 +34,6 @@ export const metadata: Metadata = {
   },
   description:
     "Advocacia estratégica e assessoria jurídica integral com atendimento em todo o Brasil. Defesa dos seus direitos com excelência, rigor técnico e soluções sob medida para você e sua empresa.",
-  icons: {
-    icon: "/logo.jpg",
-    apple: "/logo.jpg",
-  },
   openGraph: {
     title: "ERICK DO CARMO ADVOGADOS | Advocacia em Praia Grande e Litoral de SP",
     description:
