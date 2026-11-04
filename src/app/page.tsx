@@ -110,6 +110,19 @@ const faqs = [
   },
 ];
 
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: f.a,
+    },
+  })),
+};
+
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-5 inline-flex items-center gap-3">
@@ -122,6 +135,10 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen bg-[#090E1A] text-slate-100 overflow-x-hidden selection:bg-gold selection:text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#090E1A]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8">
