@@ -5,7 +5,6 @@ import {
   ArrowUpRight,
   Briefcase,
   Building2,
-  Check,
   Clock,
   Landmark,
   Lock,
@@ -92,13 +91,6 @@ const areas = [
   },
 ];
 
-const imobiliarioServices = [
-  "Regularização de imóveis",
-  "Usucapião",
-  "Compra, venda e locação",
-  "Proteção patrimonial",
-];
-
 const faqs = [
   {
     q: "Como funciona a primeira análise do caso?",
@@ -118,39 +110,12 @@ const faqs = [
   },
 ];
 
-function Eyebrow({ children, onLight = false }: { children: React.ReactNode; onLight?: boolean }) {
+function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-5 inline-flex items-center gap-3">
-      <span className={`h-px w-8 ${onLight ? "bg-[#0B1220]/20" : "bg-white/20"}`} />
-      <span
-        className={`text-[11px] font-semibold uppercase tracking-[0.28em] ${
-          onLight ? "text-[#5A6270]" : "text-slate-300"
-        }`}
-      >
-        {children}
-      </span>
+      <span className="h-px w-8 bg-gold/60" />
+      <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">{children}</span>
     </div>
-  );
-}
-
-function PropertyLines({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 420 320" fill="none" aria-hidden="true" className={className}>
-      <g stroke="currentColor" strokeWidth="1">
-        <path d="M0 300h420" opacity="0.45" />
-        <path d="M52 300V96l78-26v230" />
-        <path d="M52 124h78M52 152h78M52 180h78M52 208h78M52 236h78M52 264h78" opacity="0.55" />
-        <path d="M78 108v192M104 100v200" opacity="0.35" />
-        <path d="M156 300V176h96v124" />
-        <path d="M180 176v124M204 176v124M228 176v124" opacity="0.35" />
-        <path d="M156 204h96M156 232h96M156 260h96" opacity="0.55" />
-        <path d="M276 300V72l72 22v206" />
-        <path d="M276 100h72M276 128h72M276 156h72M276 184h72M276 212h72M276 240h72M276 268h72" opacity="0.55" />
-        <path d="M300 82v218M324 88v212" opacity="0.35" />
-        <path d="M276 72l36-22 36 22" opacity="0.5" />
-      </g>
-      <circle cx="352" cy="34" r="18" stroke="currentColor" opacity="0.35" />
-    </svg>
   );
 }
 
@@ -161,38 +126,39 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#090E1A]/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Erick do Carmo Advogados">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-white/[0.03] p-0.5 shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gold/30 bg-gold-soft p-0.5 shadow-sm">
               <Image src="/logo.jpg" alt="Logo EC" width={40} height={40} className="object-cover rounded-md" />
             </div>
             <div className="min-w-0 leading-tight">
               <span className="block truncate text-xs font-semibold tracking-[0.12em] sm:text-[15px] text-white uppercase">
                 ERICK DO CARMO
               </span>
-              <span className="block truncate text-[10px] uppercase tracking-[0.22em] text-slate-300 sm:text-[11px]">
+              <span className="block truncate text-[9px] uppercase tracking-[0.22em] text-slate-400 sm:text-[10px]">
                 Advogados • OAB/SP 465.833
               </span>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-200 lg:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 lg:flex">
             {[
               ["#atuacao", "Áreas de Atuação"],
               ["#escritorio", "O Escritório"],
               ["#faq", "Dúvidas"],
               ["#contato", "Contato"],
             ].map(([href, label]) => (
-              <a key={href} href={href} className="transition-colors hover:text-white">
+              <a key={href} href={href} className="transition-colors hover:text-gold">
                 {label}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3 sm:gap-5">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="hidden text-[13px] font-medium text-slate-400 transition-colors hover:text-white sm:inline-flex"
+              className="btn-ghost inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium"
             >
-              Área Restrita
+              <Lock className="h-3 w-3 text-gold" />
+              <span className="hidden sm:inline">Área Restrita</span>
             </Link>
             <a
               href={whatsappUrl}
@@ -217,14 +183,14 @@ export default function LandingPage() {
           <div className="grid-lines absolute inset-0 -z-10" />
           <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-16 pt-12 sm:px-8 lg:grid-cols-12 lg:pb-28 lg:pt-20">
             <div className="rise lg:col-span-7">
-              <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium tracking-normal text-slate-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+              <div className="glass mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] font-medium tracking-wide text-slate-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-gold" />
                 Assessoria Jurídica de Excelência • OAB/SP 465.833
               </div>
               <h1 className="font-serif text-[2.5rem] font-medium leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-[4.75rem]">
                 <em className="text-gold-gradient font-normal not-italic">Segurança jurídica</em> e firmeza na defesa dos seus interesses.
               </h1>
-              <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-200 sm:text-lg">
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
                 Atuação jurídica conduzida por advogado especialista, com foco em soluções legais pautadas no rigor técnico, na análise minuciosa de riscos e na absoluta transparência.
               </p>
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -247,7 +213,7 @@ export default function LandingPage() {
             </div>
 
             <div className="rise relative mx-auto w-full max-w-sm lg:col-span-5 lg:ml-auto" style={{ animationDelay: "150ms" }}>
-              <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-white/5 blur-3xl" />
+              <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gold/15 blur-3xl" />
               <div className="glass rounded-[1.75rem] p-2">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem]">
                   <Image
@@ -262,7 +228,7 @@ export default function LandingPage() {
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#070A12] to-transparent" />
                   <div className="absolute inset-x-4 bottom-4 glass rounded-2xl px-4 py-3">
                     <p className="font-serif text-lg text-white">Dr. Erick do Carmo</p>
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-300 font-medium">Advogado • OAB/SP 465.833</p>
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-gold font-medium">Advogado • OAB/SP 465.833</p>
                   </div>
                 </div>
               </div>
@@ -285,7 +251,7 @@ export default function LandingPage() {
                   } ${i === 2 ? "md:border-l md:border-white/10" : ""}`}
                 >
                   <p className="font-serif text-3xl sm:text-4xl text-white">{v}</p>
-                  <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-300 sm:text-xs">{l}</p>
+                  <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">{l}</p>
                 </div>
               ))}
             </div>
@@ -301,25 +267,19 @@ export default function LandingPage() {
                 <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
                   Uma nova postura na prestação de serviços jurídicos.
                 </h2>
-                <p className="mt-5 text-[15px] sm:text-base leading-relaxed text-slate-300">
+                <p className="mt-5 text-sm sm:text-base leading-relaxed text-slate-400">
                   Defesa técnica focada na solução do conflito com agilidade, ética e contato direto com o advogado responsável pelo seu processo.
                 </p>
               </div>
-              <div className="grid gap-x-10 border-b border-white/10 sm:grid-cols-2 lg:col-span-8">
+              <div className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
                 {values.map((v) => (
-                  <div
-                    key={v.n}
-                    className="group border-t border-white/10 py-6 first:border-t-0 sm:first:border-t"
-                  >
-                    <div className="flex items-baseline gap-4">
-                      <span className="font-serif text-lg text-slate-400 transition-colors group-hover:text-white">
-                        {v.n}
-                      </span>
-                      <div>
-                        <h3 className="font-serif text-2xl text-white">{v.t}</h3>
-                        <p className="mt-2 text-[15px] leading-relaxed text-slate-200">{v.d}</p>
-                      </div>
+                  <div key={v.n} className="glass card-hover group rounded-2xl p-7">
+                    <div className="flex items-center justify-between">
+                      <span className="font-serif text-3xl text-gold/70 transition-colors group-hover:text-gold">{v.n}</span>
+                      <span className="h-px w-12 bg-white/15 transition-all group-hover:w-20 group-hover:bg-gold/60" />
                     </div>
+                    <h3 className="mt-6 text-lg font-semibold text-white">{v.t}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-300">{v.d}</p>
                   </div>
                 ))}
               </div>
@@ -335,7 +295,7 @@ export default function LandingPage() {
                 <Eyebrow>Prática jurídica</Eyebrow>
                 <h2 className="font-serif text-3xl sm:text-5xl text-white">Áreas de Atuação</h2>
               </div>
-              <p className="max-w-md text-[15px] sm:text-base text-slate-300">
+              <p className="max-w-md text-sm sm:text-base text-slate-400">
                 Soluções jurídicas com visão multidisciplinar para prevenir passivos, proteger seu patrimônio e garantir vitórias consistentes.
               </p>
             </div>
@@ -346,38 +306,18 @@ export default function LandingPage() {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`glass card-hover group relative flex flex-col justify-between overflow-hidden rounded-3xl ${
-                    big ? "p-7 sm:p-9" : "p-7"
-                  } ${span ?? ""}`}
+                  className={`glass card-hover group relative flex flex-col justify-between overflow-hidden rounded-3xl p-7 ${span ?? ""}`}
                 >
-                  {big && (
-                    <PropertyLines className="pointer-events-none absolute -right-10 bottom-0 h-[115%] w-[72%] text-slate-200 opacity-[0.12]" />
-                  )}
-                  {big && <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/[0.03] blur-3xl pointer-events-none" />}
-                  <div className="relative flex items-start justify-between">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 transition-colors group-hover:text-white">
+                  {big && <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl pointer-events-none" />}
+                  <div className="flex items-start justify-between">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gold/25 bg-gold-soft text-gold">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <ArrowUpRight className="h-5 w-5 text-slate-400 opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white group-hover:opacity-100" />
+                    <ArrowUpRight className="h-5 w-5 text-slate-400 opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold group-hover:opacity-100" />
                   </div>
-                  <div className={`relative mt-8 ${big ? "max-w-[92%] sm:max-w-lg" : ""}`}>
+                  <div className="relative mt-8">
                     <h3 className={`font-serif text-white ${big ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`}>{t}</h3>
-                    <p className={`mt-3 leading-relaxed text-slate-200 ${big ? "text-[15px] sm:text-base" : "text-sm"}`}>{d}</p>
-                    {big && (
-                      <div className="mt-6 border-t border-white/10 pt-5">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">
-                          Serviços frequentes
-                        </p>
-                        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                          {imobiliarioServices.map((service) => (
-                            <li key={service} className="flex items-center gap-2 text-[15px] text-slate-200">
-                              <Check className="h-3.5 w-3.5 shrink-0 text-slate-300" />
-                              {service}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    <p className={`mt-3 leading-relaxed text-slate-300 ${big ? "max-w-sm text-sm sm:text-base" : "text-xs sm:text-sm"}`}>{d}</p>
                   </div>
                 </a>
               ))}
@@ -386,13 +326,10 @@ export default function LandingPage() {
         </section>
 
         {/* Escritório */}
-        <section
-          id="escritorio"
-          className="scroll-mt-20 border-y border-[#0B1220]/10 bg-[#F4EFE6] py-20 text-[#0B1220] sm:py-28"
-        >
+        <section id="escritorio" className="scroll-mt-20 border-y border-white/10 bg-[#070C18] py-20 sm:py-28">
           <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-2">
             <div className="relative order-2 lg:order-1">
-              <div className="rounded-[1.75rem] border border-[#0B1220]/10 bg-white p-2 shadow-[0_35px_70px_-35px_rgba(11,18,32,0.45)]">
+              <div className="glass rounded-[1.75rem] p-2">
                 <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.35rem]">
                   <Image
                     src="/erick-chair.jpg"
@@ -402,25 +339,24 @@ export default function LandingPage() {
                     sizes="(min-width: 1024px) 50vw, 100vw"
                     className="object-cover object-top"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220]/25 via-transparent to-transparent" />
                 </div>
               </div>
-              <div className="absolute -bottom-6 right-4 hidden rounded-2xl border border-[#0B1220]/10 bg-white px-6 py-4 shadow-xl shadow-[#0B1220]/10 sm:block">
-                <p className="font-serif text-3xl text-[#7C5B1D]">+300</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-[#5A6270]">Clientes atendidos</p>
+              <div className="glass absolute -bottom-6 right-4 hidden rounded-2xl px-6 py-4 sm:block border border-white/10">
+                <p className="font-serif text-3xl text-gold">+300</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Clientes atendidos</p>
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <Eyebrow onLight>O escritório</Eyebrow>
-              <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-[#0B1220]">
+              <Eyebrow>O escritório</Eyebrow>
+              <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
                 Soluções construídas com ética, técnica apurada e foco no resultado.
               </h2>
-              <p className="mt-6 text-base sm:text-lg leading-relaxed text-[#334052]">
+              <p className="mt-6 text-base sm:text-lg leading-relaxed text-slate-300">
                 Com estrutura moderna e atuação consultiva e contenciosa, unimos a precisão do Direito ao dinamismo digital, garantindo que cada cliente tenha uma defesa robusta e um plano de ação sob medida.
               </p>
-              <figure className="mt-8 border-l-2 border-[#7C5B1D]/45 pl-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#7C5B1D]">Compromisso</p>
-                <blockquote className="mt-2 font-serif text-xl sm:text-2xl italic leading-snug text-[#1B2433]">
+              <figure className="mt-8 border-l-2 border-gold/60 pl-6">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-gold">Compromisso</p>
+                <blockquote className="mt-2 font-serif text-xl sm:text-2xl italic leading-snug text-slate-200">
                   “Defesa combativa, transparência contínua e foco na melhor solução para o cliente.”
                 </blockquote>
               </figure>
@@ -434,7 +370,7 @@ export default function LandingPage() {
             <div className="lg:col-span-4">
               <Eyebrow>Esclarecimentos</Eyebrow>
               <h2 className="font-serif text-3xl sm:text-5xl text-white">Perguntas Frequentes</h2>
-              <p className="mt-5 text-[15px] sm:text-base text-slate-300">
+              <p className="mt-5 text-sm sm:text-base text-slate-400">
                 Tire suas principais dúvidas sobre o modelo de atuação e o início do atendimento.
               </p>
             </div>
@@ -442,15 +378,15 @@ export default function LandingPage() {
               {faqs.map((f, i) => (
                 <details
                   key={f.q}
-                  className="glass group rounded-2xl px-6 py-5 transition-colors open:border-white/25 sm:px-8 border border-white/10"
+                  className="glass group rounded-2xl px-6 py-5 transition-colors open:border-gold/40 sm:px-8 border border-white/10"
                   open={i === 0}
                 >
                   <summary className="flex cursor-pointer list-none items-center gap-5 [&::-webkit-details-marker]:hidden">
-                    <span className="font-serif text-xl text-slate-400">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="font-serif text-xl text-gold/70">{String(i + 1).padStart(2, "0")}</span>
                     <span className="flex-1 text-base font-medium text-white sm:text-lg">{f.q}</span>
-                    <Plus className="h-5 w-5 shrink-0 text-slate-300 transition-transform duration-300 group-open:rotate-45" />
+                    <Plus className="h-5 w-5 shrink-0 text-gold transition-transform duration-300 group-open:rotate-45" />
                   </summary>
-                  <p className="mt-4 pl-10 text-[15px] leading-relaxed text-slate-200 sm:text-base">{f.a}</p>
+                  <p className="mt-4 pl-10 text-sm leading-relaxed text-slate-300 sm:text-base">{f.a}</p>
                 </details>
               ))}
             </div>
@@ -467,7 +403,7 @@ export default function LandingPage() {
                 <h2 className="font-serif text-3xl sm:text-5xl leading-tight text-white">
                   Vamos analisar o seu caso?
                 </h2>
-                <p className="mt-5 max-w-md text-base sm:text-lg text-slate-200">
+                <p className="mt-5 max-w-md text-base sm:text-lg text-slate-300">
                   Conte com uma análise inicial atenta para entender o cenário, os riscos e os caminhos jurídicos possíveis.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-2">
@@ -480,9 +416,9 @@ export default function LandingPage() {
                     return (
                       <span
                         key={l as string}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#070A12]/60 px-3.5 py-1.5 text-[13px] text-slate-200"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#070A12]/60 px-3.5 py-1.5 text-xs text-slate-300"
                       >
-                        <Ic className="h-3.5 w-3.5 text-slate-300" /> {l as string}
+                        <Ic className="h-3.5 w-3.5 text-gold" /> {l as string}
                       </span>
                     );
                   })}
@@ -516,11 +452,11 @@ export default function LandingPage() {
                     const Ic = I as typeof Clock;
                     const inner = (
                       <>
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] text-slate-300">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-soft text-gold">
                           <Ic className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[11px] uppercase tracking-[0.2em] text-slate-300">{k as string}</p>
+                          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{k as string}</p>
                           <p className="break-words text-sm font-medium text-white sm:text-base">{v as string}</p>
                         </div>
                       </>
@@ -550,9 +486,9 @@ export default function LandingPage() {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium"
+                      className="btn-ghost inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium"
                     >
-                      <Icon className="h-3.5 w-3.5 text-slate-300" /> {label}
+                      <Icon className="h-3.5 w-3.5 text-gold" /> {label}
                     </a>
                   ))}
                 </div>
@@ -564,12 +500,12 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 bg-[#05080F]">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 text-sm text-slate-300 sm:px-8 md:grid-cols-3 md:items-center">
+        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 text-xs text-slate-400 sm:px-8 md:grid-cols-3 md:items-center">
           <div>
             <p className="text-sm font-semibold tracking-[0.12em] text-white">ERICK DO CARMO ADVOGADOS</p>
-            <p className="mt-1 uppercase tracking-[0.2em] text-slate-300">Assessoria Jurídica • OAB/SP 465.833</p>
+            <p className="mt-1 uppercase tracking-[0.2em] text-slate-400">Assessoria Jurídica • OAB/SP 465.833</p>
           </div>
-          <div className="space-y-1.5 md:text-center text-slate-300">
+          <div className="space-y-1.5 md:text-center text-slate-400">
             <p>Informativo profissional em conformidade com o Código de Ética e Disciplina da OAB e o Provimento nº 205/2021.</p>
             <p>© {new Date().getFullYear()} Erick do Carmo Advogados. Todos os direitos reservados.</p>
             <p>
@@ -578,7 +514,7 @@ export default function LandingPage() {
                 href="https://wa.me/5513991666744?text=Ol%C3%A1%2C%20Raul!%20Vi%20o%20site%20que%20voc%C3%AA%20desenvolveu%20para%20o%20Dr.%20Erick%20e%20gostaria%20de%20um%20or%C3%A7amento."
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-300 hover:text-white hover:underline font-medium"
+                className="text-gold hover:underline font-medium"
               >
                 Raul Almeida
               </a>
@@ -586,9 +522,9 @@ export default function LandingPage() {
           </div>
           <Link
             href="/login"
-            className="btn-ghost inline-flex w-fit items-center gap-1.5 rounded-full px-4 py-2 md:justify-self-end text-[13px]"
+            className="btn-ghost inline-flex w-fit items-center gap-1.5 rounded-full px-4 py-2 md:justify-self-end text-xs"
           >
-            <Lock className="h-3 w-3 text-slate-400" /> Acesso Restrito
+            <Lock className="h-3 w-3 text-gold" /> Acesso Restrito
           </Link>
         </div>
       </footer>
