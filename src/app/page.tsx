@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Briefcase,
   Building2,
+  Check,
   Clock,
   Landmark,
   Lock,
@@ -91,6 +92,13 @@ const areas = [
   },
 ];
 
+const imobiliarioServices = [
+  "Regularização de imóveis",
+  "Usucapião",
+  "Compra, venda e locação",
+  "Proteção patrimonial",
+];
+
 const faqs = [
   {
     q: "Como funciona a primeira análise do caso?",
@@ -116,6 +124,27 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
       <span className="h-px w-8 bg-gold/60" />
       <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">{children}</span>
     </div>
+  );
+}
+
+function PropertyLines({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 420 320" fill="none" aria-hidden="true" className={className}>
+      <g stroke="currentColor" strokeWidth="1">
+        <path d="M0 300h420" opacity="0.45" />
+        <path d="M52 300V96l78-26v230" />
+        <path d="M52 124h78M52 152h78M52 180h78M52 208h78M52 236h78M52 264h78" opacity="0.55" />
+        <path d="M78 108v192M104 100v200" opacity="0.35" />
+        <path d="M156 300V176h96v124" />
+        <path d="M180 176v124M204 176v124M228 176v124" opacity="0.35" />
+        <path d="M156 204h96M156 232h96M156 260h96" opacity="0.55" />
+        <path d="M276 300V72l72 22v206" />
+        <path d="M276 100h72M276 128h72M276 156h72M276 184h72M276 212h72M276 240h72M276 268h72" opacity="0.55" />
+        <path d="M300 82v218M324 88v212" opacity="0.35" />
+        <path d="M276 72l36-22 36 22" opacity="0.5" />
+      </g>
+      <circle cx="352" cy="34" r="18" stroke="currentColor" opacity="0.35" />
+    </svg>
   );
 }
 
@@ -306,18 +335,38 @@ export default function LandingPage() {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`glass card-hover group relative flex flex-col justify-between overflow-hidden rounded-3xl p-7 ${span ?? ""}`}
+                  className={`glass card-hover group relative flex flex-col justify-between overflow-hidden rounded-3xl ${
+                    big ? "p-7 sm:p-9" : "p-7"
+                  } ${span ?? ""}`}
                 >
+                  {big && (
+                    <PropertyLines className="pointer-events-none absolute -right-10 bottom-0 h-[115%] w-[72%] text-slate-200 opacity-[0.12]" />
+                  )}
                   {big && <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl pointer-events-none" />}
-                  <div className="flex items-start justify-between">
+                  <div className="relative flex items-start justify-between">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gold/25 bg-gold-soft text-gold">
                       <Icon className="h-5 w-5" />
                     </div>
                     <ArrowUpRight className="h-5 w-5 text-slate-400 opacity-0 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold group-hover:opacity-100" />
                   </div>
-                  <div className="relative mt-8">
+                  <div className={`relative mt-8 ${big ? "max-w-[92%] sm:max-w-lg" : ""}`}>
                     <h3 className={`font-serif text-white ${big ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`}>{t}</h3>
-                    <p className={`mt-3 leading-relaxed text-slate-300 ${big ? "max-w-sm text-sm sm:text-base" : "text-xs sm:text-sm"}`}>{d}</p>
+                    <p className={`mt-3 leading-relaxed text-slate-300 ${big ? "text-sm sm:text-base" : "text-xs sm:text-sm"}`}>{d}</p>
+                    {big && (
+                      <div className="mt-6 border-t border-white/10 pt-5">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                          Serviços frequentes
+                        </p>
+                        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {imobiliarioServices.map((service) => (
+                            <li key={service} className="flex items-center gap-2 text-sm text-slate-300">
+                              <Check className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                              {service}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </a>
               ))}
