@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Cormorant_Garamond, Manrope } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 
 import "./globals.css";
 import { SITE_URL } from "@/lib/constants";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-});
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -113,7 +103,7 @@ export default function RootLayout({
 
   return (
     <html lang="pt-BR" className="scroll-smooth overflow-x-hidden">
-      <body className={`${inter.variable} ${playfair.variable} ${cormorant.variable} ${manrope.variable} font-sans antialiased overflow-x-hidden w-full max-w-[100vw]`}>
+      <body className={`${cormorant.variable} ${manrope.variable} font-sans antialiased overflow-x-hidden w-full max-w-[100vw]`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

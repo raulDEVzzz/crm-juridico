@@ -74,8 +74,8 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-manrope)", "var(--font-inter)", "sans-serif"],
-        serif: ["var(--font-cormorant)", "var(--font-playfair)", "serif"],
+        sans: ["var(--font-manrope)", "sans-serif"],
+        serif: ["var(--font-cormorant)", "serif"],
       },
     },
   },
